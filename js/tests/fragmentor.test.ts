@@ -23,7 +23,7 @@ describe("fragmentor", () => {
   const provider = anchor.getProvider();
   const program = anchor.workspace.Fragmentor as anchor.Program<Fragmentor>;
 
-  it("Is initialized!", async () => {
+  it("Mint NFTs", async () => {
     const wallet = anchor.Wallet.local();
 
     const lamports: number =
@@ -57,6 +57,7 @@ describe("fragmentor", () => {
         mintKey.publicKey
       )
     );
+
     await provider?.sendAndConfirm?.(mint_tx, [mintKey, wallet.payer]);
 
     const metadataAddress = await getMetadata(mintKey.publicKey);
@@ -77,9 +78,10 @@ describe("fragmentor", () => {
     const ix = createMintNftInstruction(accounts, {
       mintKey: mintKey.publicKey,
     });
-    const tx = new anchor.web3.Transaction().add(ix);
-    const res2 = await program?.provider?.sendAndConfirm?.(tx, [wallet.payer]);
 
-    console.log("Your transaction signature", res2);
+    const tx = new anchor.web3.Transaction().add(ix);
+    const sig = await program?.provider?.sendAndConfirm?.(tx, [wallet.payer]);
+
+    console.log("Your transaction signature", sig);
   });
 });
