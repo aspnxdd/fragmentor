@@ -1,7 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{
-     Mint, TokenAccount,
-};
+use anchor_spl::token::{Mint, TokenAccount};
 
 use crate::state::*;
 
@@ -32,4 +30,11 @@ pub struct Fragment<'info> {
     pub fragmenter: Signer<'info>,
 
     pub system_program: Program<'info, System>,
+}
+
+pub fn handler(ctx: Context<Fragment>, fragmented_nfts: Vec<Pubkey>) -> Result<()> {
+
+    ctx.accounts.fragmented_mints.mints = fragmented_nfts.to_vec();
+    
+    Ok(())
 }

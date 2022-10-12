@@ -12,6 +12,11 @@ import {
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { SystemProgram } from "@solana/web3.js";
+import {
+  getMasterEdition,
+  getMetadata,
+  TOKEN_METADATA_PROGRAM_ID,
+} from "./utils";
 
 describe("fragmentor", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -21,46 +26,12 @@ describe("fragmentor", () => {
   it("Is initialized!", async () => {
     const wallet = anchor.Wallet.local();
 
-    const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
-      "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
-    );
     const lamports: number =
       await provider.connection.getMinimumBalanceForRentExemption(MINT_SIZE);
 
-    const getMetadata = async (
-      mint: anchor.web3.PublicKey
-    ): Promise<anchor.web3.PublicKey> => {
-      return (
-        await anchor.web3.PublicKey.findProgramAddress(
-          [
-            Buffer.from("metadata"),
-            TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-            mint.toBuffer(),
-          ],
-          TOKEN_METADATA_PROGRAM_ID
-        )
-      )[0];
-    };
-
-    const getMasterEdition = async (
-      mint: anchor.web3.PublicKey
-    ): Promise<anchor.web3.PublicKey> => {
-      return (
-        await anchor.web3.PublicKey.findProgramAddress(
-          [
-            Buffer.from("metadata"),
-            TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-            mint.toBuffer(),
-            Buffer.from("edition"),
-          ],
-          TOKEN_METADATA_PROGRAM_ID
-        )
-      )[0];
-    };
-
     const mintKey = anchor.web3.Keypair.generate();
 
-    const NftTokenAccount = await getAssociatedTokenAddress(
+    const ata = await getAssociatedTokenAddress(
       mintKey.publicKey,
       wallet.publicKey
     );
@@ -81,7 +52,7 @@ describe("fragmentor", () => {
       ),
       createAssociatedTokenAccountInstruction(
         wallet.publicKey,
-        NftTokenAccount,
+        ata,
         wallet.publicKey,
         mintKey.publicKey
       )
@@ -94,7 +65,7 @@ describe("fragmentor", () => {
     const accounts: MintNftInstructionAccounts = {
       mintAuthority: wallet.publicKey,
       mint: mintKey.publicKey,
-      tokenAccount: NftTokenAccount,
+      tokenAccount: ata,
       tokenProgram: TOKEN_PROGRAM_ID,
       metadata: metadataAddress,
       tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
