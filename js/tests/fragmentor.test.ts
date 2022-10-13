@@ -8,6 +8,11 @@ import {
   createFragmentInstruction,
   FragmentInstructionAccounts,
 } from "../src/generated/instructions/fragment";
+import {
+  createInitVaultInstruction,
+  InitVaultInstructionAccounts,
+} from "../src/generated/instructions/initVault";
+import { Vault } from "../src/generated/accounts/Vault";
 import { FragmentedMints } from "../src/generated/accounts/FragmentedMints";
 import { WholeNft } from "../src/generated/accounts/WholeNft";
 import {
@@ -101,22 +106,61 @@ describe("fragmentor", () => {
     const [fragment1] = await mintNft();
     const [fragment2] = await mintNft();
 
-    const [wholeNftPDA] = PublicKey.findProgramAddressSync(
+    const [wholeNftPDA, wholeNftPDABump] = PublicKey.findProgramAddressSync(
       [Buffer.from("whole_nft"), mintKey.publicKey.toBytes()],
       program.programId
     );
 
+    const [fragmentedMintsPDA, fragmentedMintsPDABump] =
+      PublicKey.findProgramAddressSync(
+        [Buffer.from("fragments"), mintKey.publicKey.toBytes()],
+        program.programId
+      );
+
+    const [vaultPDA, vaultPDABump] = PublicKey.findProgramAddressSync(
+      [Buffer.from("vault"), wallet.publicKey.toBytes()],
+      program.programId
+    );
+
+    const [vaultAuthPDA, vaultAuthPDABump] = PublicKey.findProgramAddressSync(
+      [Buffer.from(vaultPDA.toBytes())],
+      program.programId
+    );
+
+    const [wholeNftThronePDA, wholeNftThronePDABump] =
+      PublicKey.findProgramAddressSync(
+        [Buffer.from("whole_nft_throne"), vaultPDA.toBytes()],
+        program.programId
+      );
+
+    console.log({ wholeNftThronePDA: wholeNftThronePDA.toBase58() });
+    console.log({ vaultPDA: vaultPDA.toBase58() });
+    console.log({ vaultAuthPDA: vaultAuthPDA.toBase58() });
+    console.log({ fragmentedMintsPDA: fragmentedMintsPDA.toBase58() });
     console.log({ wholeNftPDA: wholeNftPDA.toBase58() });
+    console.log({ wholeNftThronePDABump: wholeNftThronePDABump });
+    console.log({ vaultPDABump: vaultPDABump });
+    console.log({ vaultAuthPDABump: vaultAuthPDABump });
+    console.log({ fragmentedMintsPDABump: fragmentedMintsPDABump });
+    console.log({ wholeNftPDABump: wholeNftPDABump });
+        
+    const acs: InitVaultInstructionAccounts = {
+      creator: wallet.publicKey,
+      payer: wallet.publicKey,
+      vault: vaultPDA,
+      systemProgram: SystemProgram.programId,
+    };
 
-    const [fragmentedMintsPDA] = PublicKey.findProgramAddressSync(
-      [Buffer.from("fragments"), mintKey.publicKey.toBytes()],
-      program.programId
+    const tx1 = new anchor.web3.Transaction().add(
+      createInitVaultInstruction(acs)
     );
 
-    const [wholeNftThronePDA] = PublicKey.findProgramAddressSync(
-      [Buffer.from("whole_nft_throne"), mintKey.publicKey.toBytes()],
-      program.programId
-    );
+    await program?.provider?.sendAndConfirm?.(tx1, [wallet.payer]);
+
+    (await Vault.gpaBuilder().run(provider.connection)).forEach((e) => {
+      const [a] = Vault.deserialize(e.account.data);
+      console.log("a", a.pretty());
+    });
 
     const accs: FragmentInstructionAccounts = {
       mint: mintKey.publicKey,
@@ -129,10 +173,13 @@ describe("fragmentor", () => {
       mintSource: mintAta,
       rent: anchor.web3.SYSVAR_RENT_PUBKEY,
       wholeNftThrone: wholeNftThronePDA,
+      authority: vaultAuthPDA, // change
+      vault: vaultPDA,
     };
 
     const tx = new anchor.web3.Transaction().add(
       createFragmentInstruction(accs, {
+        bumpAuth: vaultAuthPDABump,
         originalNft: mintKey.publicKey,
         fragmentedNfts: [fragment1.publicKey, fragment2.publicKey],
       })

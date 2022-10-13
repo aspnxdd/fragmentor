@@ -7,8 +7,8 @@
 
 import * as splToken from '@solana/spl-token'
 import * as web3 from '@solana/web3.js'
-import * as beetSolana from '@metaplex-foundation/beet-solana'
 import * as beet from '@metaplex-foundation/beet'
+import * as beetSolana from '@metaplex-foundation/beet-solana'
 
 /**
  * @category Instructions
@@ -16,6 +16,7 @@ import * as beet from '@metaplex-foundation/beet'
  * @category generated
  */
 export type FragmentInstructionArgs = {
+  bumpAuth: number
   originalNft: web3.PublicKey
   fragmentedNfts: web3.PublicKey[]
 }
@@ -31,6 +32,7 @@ export const fragmentStruct = new beet.FixableBeetArgsStruct<
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['bumpAuth', beet.u8],
     ['originalNft', beetSolana.publicKey],
     ['fragmentedNfts', beet.array(beetSolana.publicKey)],
   ],
@@ -40,8 +42,10 @@ export const fragmentStruct = new beet.FixableBeetArgsStruct<
  * Accounts required by the _fragment_ instruction
  *
  * @property [_writable_] wholeNft
+ * @property [_writable_] vault
  * @property [_writable_] wholeNftThrone
  * @property [_writable_, **signer**] payer
+ * @property [] authority
  * @property [_writable_] mintSource
  * @property [] mint
  * @property [_writable_] fragmentedMints
@@ -52,8 +56,10 @@ export const fragmentStruct = new beet.FixableBeetArgsStruct<
  */
 export type FragmentInstructionAccounts = {
   wholeNft: web3.PublicKey
+  vault: web3.PublicKey
   wholeNftThrone: web3.PublicKey
   payer: web3.PublicKey
+  authority: web3.PublicKey
   mintSource: web3.PublicKey
   mint: web3.PublicKey
   fragmentedMints: web3.PublicKey
@@ -94,6 +100,11 @@ export function createFragmentInstruction(
       isSigner: false,
     },
     {
+      pubkey: accounts.vault,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.wholeNftThrone,
       isWritable: true,
       isSigner: false,
@@ -102,6 +113,11 @@ export function createFragmentInstruction(
       pubkey: accounts.payer,
       isWritable: true,
       isSigner: true,
+    },
+    {
+      pubkey: accounts.authority,
+      isWritable: false,
+      isSigner: false,
     },
     {
       pubkey: accounts.mintSource,

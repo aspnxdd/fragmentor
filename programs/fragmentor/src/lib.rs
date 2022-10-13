@@ -15,6 +15,7 @@ pub mod fragmentor {
 
     pub fn fragment(
         ctx: Context<Fragment>,
+        _bump_auth:u8,
         original_nft: Pubkey,
         fragmented_nfts: Vec<Pubkey>,
     ) -> Result<()> {
@@ -23,5 +24,9 @@ pub mod fragmentor {
 
     pub fn mint_nft(ctx: Context<MintNFT>, mint_key: Pubkey) -> Result<()> {
         instructions::mint_nft::handler(ctx, mint_key, "a".to_owned(), "b".to_owned())
+    }
+
+    pub fn init_vault(ctx: Context<InitVault>) -> Result<()> {
+        instructions::init_vault::handler(ctx)
     }
 }
