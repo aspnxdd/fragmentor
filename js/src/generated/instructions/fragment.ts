@@ -5,8 +5,10 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
+import * as splToken from '@solana/spl-token'
 import * as web3 from '@solana/web3.js'
+import * as beetSolana from '@metaplex-foundation/beet-solana'
+import * as beet from '@metaplex-foundation/beet'
 
 /**
  * @category Instructions
@@ -14,21 +16,23 @@ import * as web3 from '@solana/web3.js'
  * @category generated
  */
 export type FragmentInstructionArgs = {
-  parts: number
+  originalNft: web3.PublicKey
+  fragmentedNfts: web3.PublicKey[]
 }
 /**
  * @category Instructions
  * @category Fragment
  * @category generated
  */
-export const fragmentStruct = new beet.BeetArgsStruct<
+export const fragmentStruct = new beet.FixableBeetArgsStruct<
   FragmentInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['parts', beet.u8],
+    ['originalNft', beetSolana.publicKey],
+    ['fragmentedNfts', beet.array(beetSolana.publicKey)],
   ],
   'FragmentInstructionArgs'
 )
@@ -36,10 +40,11 @@ export const fragmentStruct = new beet.BeetArgsStruct<
  * Accounts required by the _fragment_ instruction
  *
  * @property [_writable_] wholeNft
+ * @property [_writable_] wholeNftThrone
  * @property [_writable_, **signer**] payer
  * @property [_writable_] mintSource
  * @property [] mint
- * @property [] fragmentedMints
+ * @property [_writable_] fragmentedMints
  * @property [**signer**] fragmenter
  * @category Instructions
  * @category Fragment
@@ -47,12 +52,15 @@ export const fragmentStruct = new beet.BeetArgsStruct<
  */
 export type FragmentInstructionAccounts = {
   wholeNft: web3.PublicKey
+  wholeNftThrone: web3.PublicKey
   payer: web3.PublicKey
   mintSource: web3.PublicKey
   mint: web3.PublicKey
   fragmentedMints: web3.PublicKey
   fragmenter: web3.PublicKey
+  tokenProgram?: web3.PublicKey
   systemProgram?: web3.PublicKey
+  rent?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -73,7 +81,7 @@ export const fragmentInstructionDiscriminator = [
 export function createFragmentInstruction(
   accounts: FragmentInstructionAccounts,
   args: FragmentInstructionArgs,
-  programId = new web3.PublicKey('6jZDraLYUeT7Gau1Y4CEf8GPdbquacMEDJ6nZKYX6Q4m')
+  programId = new web3.PublicKey('CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed')
 ) {
   const [data] = fragmentStruct.serialize({
     instructionDiscriminator: fragmentInstructionDiscriminator,
@@ -82,6 +90,11 @@ export function createFragmentInstruction(
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.wholeNft,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.wholeNftThrone,
       isWritable: true,
       isSigner: false,
     },
@@ -102,7 +115,7 @@ export function createFragmentInstruction(
     },
     {
       pubkey: accounts.fragmentedMints,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
@@ -111,7 +124,17 @@ export function createFragmentInstruction(
       isSigner: true,
     },
     {
+      pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.rent ?? web3.SYSVAR_RENT_PUBKEY,
       isWritable: false,
       isSigner: false,
     },

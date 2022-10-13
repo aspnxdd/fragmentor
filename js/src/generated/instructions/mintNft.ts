@@ -79,7 +79,7 @@ export const mintNftInstructionDiscriminator = [
 export function createMintNftInstruction(
   accounts: MintNftInstructionAccounts,
   args: MintNftInstructionArgs,
-  programId = new web3.PublicKey('6jZDraLYUeT7Gau1Y4CEf8GPdbquacMEDJ6nZKYX6Q4m')
+  programId = new web3.PublicKey('CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed')
 ) {
   const [data] = mintNftStruct.serialize({
     instructionDiscriminator: mintNftInstructionDiscriminator,

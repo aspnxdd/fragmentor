@@ -15,7 +15,7 @@ import * as beet from '@metaplex-foundation/beet'
  * @category generated
  */
 export type FragmentedMintsArgs = {
-  fragmentedMints: web3.PublicKey[]
+  mints: web3.PublicKey[]
 }
 
 export const fragmentedMintsDiscriminator = [
@@ -29,13 +29,13 @@ export const fragmentedMintsDiscriminator = [
  * @category generated
  */
 export class FragmentedMints implements FragmentedMintsArgs {
-  private constructor(readonly fragmentedMints: web3.PublicKey[]) {}
+  private constructor(readonly mints: web3.PublicKey[]) {}
 
   /**
    * Creates a {@link FragmentedMints} instance from the provided args.
    */
   static fromArgs(args: FragmentedMintsArgs) {
-    return new FragmentedMints(args.fragmentedMints)
+    return new FragmentedMints(args.mints)
   }
 
   /**
@@ -78,7 +78,7 @@ export class FragmentedMints implements FragmentedMintsArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      '6jZDraLYUeT7Gau1Y4CEf8GPdbquacMEDJ6nZKYX6Q4m'
+      'CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, fragmentedMintsBeet)
@@ -143,7 +143,7 @@ export class FragmentedMints implements FragmentedMintsArgs {
    */
   pretty() {
     return {
-      fragmentedMints: this.fragmentedMints,
+      mints: this.mints,
     }
   }
 }
@@ -160,7 +160,7 @@ export const fragmentedMintsBeet = new beet.FixableBeetStruct<
 >(
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['fragmentedMints', beet.array(beetSolana.publicKey)],
+    ['mints', beet.array(beetSolana.publicKey)],
   ],
   FragmentedMints.fromArgs,
   'FragmentedMints'

@@ -1,7 +1,7 @@
 [features]
 seeds = false
 [programs.localnet]
-fragmentor = "6jZDraLYUeT7Gau1Y4CEf8GPdbquacMEDJ6nZKYX6Q4m"
+fragmentor = "CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed"
 
 [registry]
 url = "https://anchor.projectserum.com"

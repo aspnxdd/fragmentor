@@ -77,7 +77,7 @@ export class WholeNft implements WholeNftArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      '6jZDraLYUeT7Gau1Y4CEf8GPdbquacMEDJ6nZKYX6Q4m'
+      'CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, wholeNftBeet)
