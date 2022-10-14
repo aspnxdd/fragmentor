@@ -15,8 +15,9 @@ import * as beet from '@metaplex-foundation/beet'
  * @category generated
  */
 export type WholeNftArgs = {
-  mint: web3.PublicKey
+  originalMint: web3.PublicKey
   parts: number
+  fragments: web3.PublicKey[]
 }
 
 export const wholeNftDiscriminator = [164, 165, 36, 244, 176, 206, 237, 20]
@@ -28,13 +29,17 @@ export const wholeNftDiscriminator = [164, 165, 36, 244, 176, 206, 237, 20]
  * @category generated
  */
 export class WholeNft implements WholeNftArgs {
-  private constructor(readonly mint: web3.PublicKey, readonly parts: number) {}
+  private constructor(
+    readonly originalMint: web3.PublicKey,
+    readonly parts: number,
+    readonly fragments: web3.PublicKey[]
+  ) {}
 
   /**
    * Creates a {@link WholeNft} instance from the provided args.
    */
   static fromArgs(args: WholeNftArgs) {
-    return new WholeNft(args.mint, args.parts)
+    return new WholeNft(args.originalMint, args.parts, args.fragments)
   }
 
   /**
@@ -104,34 +109,36 @@ export class WholeNft implements WholeNftArgs {
 
   /**
    * Returns the byteSize of a {@link Buffer} holding the serialized data of
-   * {@link WholeNft}
+   * {@link WholeNft} for the provided args.
+   *
+   * @param args need to be provided since the byte size for this account
+   * depends on them
    */
-  static get byteSize() {
-    return wholeNftBeet.byteSize
+  static byteSize(args: WholeNftArgs) {
+    const instance = WholeNft.fromArgs(args)
+    return wholeNftBeet.toFixedFromValue({
+      accountDiscriminator: wholeNftDiscriminator,
+      ...instance,
+    }).byteSize
   }
 
   /**
    * Fetches the minimum balance needed to exempt an account holding
    * {@link WholeNft} data from rent
    *
+   * @param args need to be provided since the byte size for this account
+   * depends on them
    * @param connection used to retrieve the rent exemption information
    */
   static async getMinimumBalanceForRentExemption(
+    args: WholeNftArgs,
     connection: web3.Connection,
     commitment?: web3.Commitment
   ): Promise<number> {
     return connection.getMinimumBalanceForRentExemption(
-      WholeNft.byteSize,
+      WholeNft.byteSize(args),
       commitment
     )
-  }
-
-  /**
-   * Determines if the provided {@link Buffer} has the correct byte size to
-   * hold {@link WholeNft} data.
-   */
-  static hasCorrectByteSize(buf: Buffer, offset = 0) {
-    return buf.byteLength - offset === WholeNft.byteSize
   }
 
   /**
@@ -140,8 +147,9 @@ export class WholeNft implements WholeNftArgs {
    */
   pretty() {
     return {
-      mint: this.mint.toBase58(),
+      originalMint: this.originalMint.toBase58(),
       parts: this.parts,
+      fragments: this.fragments,
     }
   }
 }
@@ -150,7 +158,7 @@ export class WholeNft implements WholeNftArgs {
  * @category Accounts
  * @category generated
  */
-export const wholeNftBeet = new beet.BeetStruct<
+export const wholeNftBeet = new beet.FixableBeetStruct<
   WholeNft,
   WholeNftArgs & {
     accountDiscriminator: number[] /* size: 8 */
@@ -158,8 +166,9 @@ export const wholeNftBeet = new beet.BeetStruct<
 >(
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['mint', beetSolana.publicKey],
+    ['originalMint', beetSolana.publicKey],
     ['parts', beet.u8],
+    ['fragments', beet.array(beetSolana.publicKey)],
   ],
   WholeNft.fromArgs,
   'WholeNft'

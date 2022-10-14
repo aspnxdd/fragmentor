@@ -41,28 +41,26 @@ export const fragmentStruct = new beet.FixableBeetArgsStruct<
 /**
  * Accounts required by the _fragment_ instruction
  *
- * @property [_writable_] wholeNft
  * @property [_writable_] vault
+ * @property [_writable_] wholeNft
  * @property [_writable_] wholeNftThrone
  * @property [_writable_, **signer**] payer
  * @property [] authority
  * @property [_writable_] mintSource
  * @property [] mint
- * @property [_writable_] fragmentedMints
  * @property [**signer**] fragmenter
  * @category Instructions
  * @category Fragment
  * @category generated
  */
 export type FragmentInstructionAccounts = {
-  wholeNft: web3.PublicKey
   vault: web3.PublicKey
+  wholeNft: web3.PublicKey
   wholeNftThrone: web3.PublicKey
   payer: web3.PublicKey
   authority: web3.PublicKey
   mintSource: web3.PublicKey
   mint: web3.PublicKey
-  fragmentedMints: web3.PublicKey
   fragmenter: web3.PublicKey
   tokenProgram?: web3.PublicKey
   systemProgram?: web3.PublicKey
@@ -95,12 +93,12 @@ export function createFragmentInstruction(
   })
   const keys: web3.AccountMeta[] = [
     {
-      pubkey: accounts.wholeNft,
+      pubkey: accounts.vault,
       isWritable: true,
       isSigner: false,
     },
     {
-      pubkey: accounts.vault,
+      pubkey: accounts.wholeNft,
       isWritable: true,
       isSigner: false,
     },
@@ -127,11 +125,6 @@ export function createFragmentInstruction(
     {
       pubkey: accounts.mint,
       isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.fragmentedMints,
-      isWritable: true,
       isSigner: false,
     },
     {

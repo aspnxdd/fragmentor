@@ -22,7 +22,7 @@ import {
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { PublicKey, SystemProgram } from "@solana/web3.js";
+import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
 import {
   getMasterEdition,
   getMetadata,
@@ -106,8 +106,14 @@ describe("fragmentor", () => {
     const [fragment1] = await mintNft();
     const [fragment2] = await mintNft();
 
+    const vault = Keypair.generate();
+
     const [wholeNftPDA, wholeNftPDABump] = PublicKey.findProgramAddressSync(
-      [Buffer.from("whole_nft"), mintKey.publicKey.toBytes()],
+      [
+        Buffer.from("whole_nft"),
+        mintKey.publicKey.toBytes(),
+        vault.publicKey.toBytes(),
+      ],
       program.programId
     );
 
@@ -117,37 +123,35 @@ describe("fragmentor", () => {
         program.programId
       );
 
-    const [vaultPDA, vaultPDABump] = PublicKey.findProgramAddressSync(
-      [Buffer.from("vault"), wallet.publicKey.toBytes()],
-      program.programId
-    );
-
     const [vaultAuthPDA, vaultAuthPDABump] = PublicKey.findProgramAddressSync(
-      [Buffer.from(vaultPDA.toBytes())],
+      [Buffer.from(vault.publicKey.toBytes())],
       program.programId
     );
 
     const [wholeNftThronePDA, wholeNftThronePDABump] =
       PublicKey.findProgramAddressSync(
-        [Buffer.from("whole_nft_throne"), vaultPDA.toBytes()],
+        [
+          Buffer.from("whole_nft_throne"),
+          mintKey.publicKey.toBytes(),
+          vault.publicKey.toBytes(),
+        ],
         program.programId
       );
 
     console.log({ wholeNftThronePDA: wholeNftThronePDA.toBase58() });
-    console.log({ vaultPDA: vaultPDA.toBase58() });
     console.log({ vaultAuthPDA: vaultAuthPDA.toBase58() });
     console.log({ fragmentedMintsPDA: fragmentedMintsPDA.toBase58() });
     console.log({ wholeNftPDA: wholeNftPDA.toBase58() });
     console.log({ wholeNftThronePDABump: wholeNftThronePDABump });
-    console.log({ vaultPDABump: vaultPDABump });
     console.log({ vaultAuthPDABump: vaultAuthPDABump });
     console.log({ fragmentedMintsPDABump: fragmentedMintsPDABump });
     console.log({ wholeNftPDABump: wholeNftPDABump });
-        
+    console.log({ vault: vault.publicKey.toBase58() });
+
     const acs: InitVaultInstructionAccounts = {
       creator: wallet.publicKey,
       payer: wallet.publicKey,
-      vault: vaultPDA,
+      vault: vault.publicKey,
       systemProgram: SystemProgram.programId,
     };
 
@@ -155,7 +159,7 @@ describe("fragmentor", () => {
       createInitVaultInstruction(acs)
     );
 
-    await program?.provider?.sendAndConfirm?.(tx1, [wallet.payer]);
+    await program?.provider?.sendAndConfirm?.(tx1, [vault]);
 
     (await Vault.gpaBuilder().run(provider.connection)).forEach((e) => {
       const [a] = Vault.deserialize(e.account.data);
@@ -167,14 +171,15 @@ describe("fragmentor", () => {
       tokenProgram: TOKEN_PROGRAM_ID,
       payer: wallet.publicKey,
       systemProgram: SystemProgram.programId,
-      wholeNft: wholeNftPDA,
-      fragmentedMints: fragmentedMintsPDA,
+      // wholeNft: wholeNftPDA,
       fragmenter: wallet.publicKey,
       mintSource: mintAta,
       rent: anchor.web3.SYSVAR_RENT_PUBKEY,
       wholeNftThrone: wholeNftThronePDA,
+
       authority: vaultAuthPDA, // change
-      vault: vaultPDA,
+      vault: vault.publicKey,
+      wholeNft: wholeNftPDA,
     };
 
     const tx = new anchor.web3.Transaction().add(
@@ -184,8 +189,10 @@ describe("fragmentor", () => {
         fragmentedNfts: [fragment1.publicKey, fragment2.publicKey],
       })
     );
-
-    // the payer shoudl be the vault, whcih has its own keypair like a Bank
     await program?.provider?.sendAndConfirm?.(tx, [wallet.payer]);
   });
 });
+
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

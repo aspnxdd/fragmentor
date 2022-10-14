@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 
 use crate::state::*;
@@ -9,22 +8,29 @@ use crate::constants::ANCHOR_DISC;
 #[derive(Accounts)]
 #[instruction(bump_auth: u8)]
 pub struct Fragment<'info> {
-    #[account(init_if_needed, seeds = [
-        b"whole_nft",
-        mint.key().as_ref(),
-    ],
-    bump,
-    payer = payer,
-    space = ANCHOR_DISC + std::mem::size_of::<WholeNft>())]
-    pub whole_nft: Account<'info, WholeNft>,
-
     #[account(mut)]
     pub vault: Account<'info, Vault>,
 
+    #[account(init_if_needed, seeds = [
+        b"whole_nft",
+        mint.key().as_ref(),
+        vault.key().as_ref()
+    ],
+    bump,
+    payer = payer,
+    space = ANCHOR_DISC + WHOLE_NFT_SIZE)]
+    pub whole_nft: Account<'info, WholeNft>,
+
     // @TODO - make authority a from vault
-    #[account(init_if_needed,
-    associated_token::mint = mint,
-    associated_token::authority = authority,
+    #[account(init,
+    seeds=[
+        b"whole_nft_throne",
+        mint.key().as_ref(),
+        vault.key().as_ref()
+    ],
+    bump,
+    token::mint = mint,
+    token::authority = authority,
     payer = payer)]
     pub whole_nft_throne: Account<'info, TokenAccount>,
 
@@ -40,15 +46,6 @@ pub struct Fragment<'info> {
 
     pub mint: Account<'info, Mint>,
 
-    #[account(init_if_needed, seeds = [
-        b"fragments",
-        mint.key().as_ref(),
-    ],
-    bump,
-    payer = payer,
-    space = ANCHOR_DISC + FRAGMENTED_MINTS_SIZE)]
-    pub fragmented_mints: Account<'info, FragmentedMints>,
-
     pub fragmenter: Signer<'info>,
 
     pub token_program: Program<'info, Token>,
@@ -56,9 +53,6 @@ pub struct Fragment<'info> {
     pub system_program: Program<'info, System>,
 
     pub rent: Sysvar<'info, Rent>,
-
-    pub associated_token_program: Program<'info, AssociatedToken>,
-
 }
 
 impl<'info> Fragment<'info> {
@@ -68,7 +62,7 @@ impl<'info> Fragment<'info> {
             Transfer {
                 from: self.mint_source.to_account_info(),
                 to: self.whole_nft_throne.to_account_info(),
-                authority: self.authority.to_account_info(),
+                authority: self.payer.to_account_info(),
             },
         )
     }
@@ -79,12 +73,13 @@ pub fn handler(
     original_nft: Pubkey,
     fragmented_nfts: Vec<Pubkey>,
 ) -> Result<()> {
-    ctx.accounts.fragmented_mints.mints = fragmented_nfts.to_vec();
-    ctx.accounts.whole_nft.mint = original_nft;
-    ctx.accounts.whole_nft.parts = ctx.accounts.fragmented_mints.mints.len() as u8;
-    let vault = &ctx.accounts.vault;
+    ctx.accounts.whole_nft.original_mint = original_nft;
+    ctx.accounts.whole_nft.parts = fragmented_nfts.len() as u8;
+    ctx.accounts.whole_nft.fragments = fragmented_nfts;
 
-    // token::transfer(ctx.accounts.transfer_ctx().with_signer(&[&vault.vault_seeds()]), 1)?;
+    let vault = &*ctx.accounts.vault;
+
+    token::transfer(ctx.accounts.transfer_ctx().with_signer(&[&vault.vault_seeds()]), 1)?;
 
     Ok(())
 }
