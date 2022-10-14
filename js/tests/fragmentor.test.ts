@@ -12,6 +12,10 @@ import {
   createInitVaultInstruction,
   InitVaultInstructionAccounts,
 } from "../src/generated/instructions/initVault";
+import {
+  createUnfragInstruction,
+  UnfragInstructionAccounts,
+} from "../src/generated/instructions/unfrag";
 import { Vault } from "../src/generated/accounts/Vault";
 import { WholeNft } from "../src/generated/accounts/WholeNft";
 import {
@@ -99,8 +103,8 @@ describe("fragmentor", () => {
     }
 
     const [mintKey, mintAta] = await mintNft();
-    const [fragment1] = await mintNft();
-    const [fragment2] = await mintNft();
+    const [fragment1, fragment1ata] = await mintNft();
+    const [fragment2,fragment2ata] = await mintNft();
 
     const vault = Keypair.generate();
 
@@ -169,8 +173,6 @@ describe("fragmentor", () => {
       wholeNft: wholeNftPDA,
     };
 
-    console.log({vaultAuthPDA: vaultAuthPDA.toBase58()})
-
     const tx = new anchor.web3.Transaction().add(
       createFragmentInstruction(fragmentIxAccs, {
         bumpAuth: vaultAuthPDABump,
@@ -223,5 +225,49 @@ describe("fragmentor", () => {
           assert.equal(parts, 2);
         });
       });
+
+      const remainingAccounts:anchor.web3.AccountMeta[] = [];
+      remainingAccounts.push({
+        pubkey: fragment1.publicKey,
+        isWritable: true,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: fragment2.publicKey,
+        isWritable: true,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: fragment1ata,
+        isWritable: true,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: fragment2ata,
+        isWritable: true,
+        isSigner: false,
+      });
+
+
+    const unfragAccs: UnfragInstructionAccounts = {
+      tokenProgram: TOKEN_PROGRAM_ID,
+      payer: wallet.publicKey,
+      systemProgram: SystemProgram.programId,
+      rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      wholeNftThrone: wholeNftThronePDA,
+      authority: vaultAuthPDA,
+      vault: vault.publicKey,
+      wholeNft: wholeNftPDA,
+      anchorRemainingAccounts: remainingAccounts,
+    }
+
+    const tx2 = new anchor.web3.Transaction().add(
+      createUnfragInstruction(unfragAccs, {
+        bumpAuth: vaultAuthPDABump,
+        fragmentedNfts: [fragment1.publicKey, fragment2.publicKey],
+      })
+    );
+    await program?.provider?.sendAndConfirm?.(tx2, [wallet.payer]);
+
   });
 });

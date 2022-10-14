@@ -1,10 +1,9 @@
 use anchor_lang::prelude::*;
+use instructions::*;
 
 mod constants;
 mod instructions;
 mod state;
-
-use instructions::*;
 
 declare_id!("CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed");
 
@@ -15,7 +14,7 @@ pub mod fragmentor {
 
     pub fn fragment(
         ctx: Context<Fragment>,
-        _bump_auth:u8,
+        _bump_auth: u8,
         original_nft: Pubkey,
         fragmented_nfts: Vec<Pubkey>,
     ) -> Result<()> {
@@ -28,5 +27,12 @@ pub mod fragmentor {
 
     pub fn init_vault(ctx: Context<InitVault>) -> Result<()> {
         instructions::init_vault::handler(ctx)
+    }
+    pub fn unfrag<'key, 'accounts, 'remaining, 'info>(
+        ctx: Context<'key, 'accounts, 'remaining, 'info, Unfragment<'info>>,
+        _bump_auth: u8,
+        fragmented_nfts: Vec<Pubkey>,
+    ) -> Result<()> {
+        instructions::unfragment::handler(ctx, fragmented_nfts)
     }
 }
