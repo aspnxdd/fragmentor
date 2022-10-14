@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    associated_token::{get_associated_token_address, AssociatedToken},
+    associated_token::{get_associated_token_address},
     token::{self, Burn, Token, TokenAccount},
 };
 
@@ -118,22 +118,22 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     // msg!("burning 1- {}", fragmented_nfts[0].key());
     // msg!("burning 2- {}", fragmented_nfts[1].key());
 
-    // for fragmented_nft in &fragmented_nfts {
+    for fragmented_nft in fragmented_nfts {
         // burn fragmented nft
         let mint_acc = mint_accs
             .iter()
-            .find(|&&mint| mint.key() == fragmented_nfts[1].key())
+            .find(|&&mint| mint.key() == fragmented_nft.key())
             .unwrap();
         let ata_acc = ata_accs
             .iter()
             .find(|&&ata| {
-                ata.key() == get_associated_token_address(&owner.key(), &fragmented_nfts[1].key())
+                ata.key() == get_associated_token_address(&owner.key(), &fragmented_nft.key())
             })
             .unwrap();
-        msg!("burning m {}", mint_acc.key());
-        msg!("burning a {}", ata_acc.key());
-        msg!("burning x1 {}", get_associated_token_address(&owner.key(), &fragmented_nfts[0].key()).key());
-        msg!("burning x2 {}", get_associated_token_address(&owner.key(), &fragmented_nfts[1].key()).key());
+        // msg!("burning m {}", mint_acc.key());
+        // msg!("burning a {}", ata_acc.key());
+        // msg!("burning x1 {}", get_associated_token_address(&owner.key(), &fragmented_nfts[0].key()).key());
+        // msg!("burning x2 {}", get_associated_token_address(&owner.key(), &fragmented_nfts[1].key()).key());
         
         let cpi_accounts = Burn {
             authority: ctx.accounts.payer.to_account_info(),
@@ -147,7 +147,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
 
         // remove fragmented nft from whole_nft
         // whole_nft.fragments.retain(|x| x != fragmented_nft);
-    // }
+    }
 
     // let vault = &mut ctx.accounts.vault;
     // vault.boxes -= 1;
