@@ -16,7 +16,6 @@ pub struct InitVault<'info> {
 }
 
 pub fn handler(ctx: Context<InitVault>) -> Result<()> {
-    // record total number of vaults in bank's state
     let vault = &mut ctx.accounts.vault;
     let creator = ctx.accounts.payer.key();
 
@@ -28,7 +27,6 @@ pub fn handler(ctx: Context<InitVault>) -> Result<()> {
     msg!("authority address: {:?}", authority);
     msg!("authority bump: {:?}", bump);
 
-    // record vault's state
     vault.owner = creator;
     vault.authority = authority;
     vault.authority_seed = vault_address;

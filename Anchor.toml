@@ -7,7 +7,7 @@ fragmentor = "CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed"
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "devnet"
+cluster = "localnet"
 wallet = "wallet.json"
 
 [scripts]

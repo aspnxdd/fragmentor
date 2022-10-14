@@ -8,7 +8,7 @@ use crate::constants::ANCHOR_DISC;
 #[derive(Accounts)]
 #[instruction(bump_auth: u8)]
 pub struct Fragment<'info> {
-    #[account(mut)]
+    #[account(mut, has_one = authority, constraint = payer.key()==vault.owner.key())]
     pub vault: Account<'info, Vault>,
 
     #[account(init_if_needed, seeds = [
@@ -78,8 +78,16 @@ pub fn handler(
     ctx.accounts.whole_nft.fragments = fragmented_nfts;
 
     let vault = &*ctx.accounts.vault;
+    token::transfer(
+        ctx.accounts
+            .transfer_ctx()
+            .with_signer(&[&vault.vault_seeds()]),
+        1,
+    )?;
 
-    token::transfer(ctx.accounts.transfer_ctx().with_signer(&[&vault.vault_seeds()]), 1)?;
+    let vault = &mut ctx.accounts.vault;
+    vault.boxes += 1;
+    vault.owner = ctx.accounts.payer.key();
 
     Ok(())
 }

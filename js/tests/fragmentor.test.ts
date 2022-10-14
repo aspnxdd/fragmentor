@@ -13,7 +13,6 @@ import {
   InitVaultInstructionAccounts,
 } from "../src/generated/instructions/initVault";
 import { Vault } from "../src/generated/accounts/Vault";
-import { FragmentedMints } from "../src/generated/accounts/FragmentedMints";
 import { WholeNft } from "../src/generated/accounts/WholeNft";
 import {
   createAssociatedTokenAccountInstruction,
@@ -36,7 +35,6 @@ describe("fragmentor", () => {
   const program = anchor.workspace.Fragmentor as anchor.Program<Fragmentor>;
 
   it("Mint NFTs", async () => {
-    console.log("MINT");
     const wallet = anchor.Wallet.local();
     async function mintNft(): Promise<
       [anchor.web3.Keypair, anchor.web3.PublicKey]
@@ -50,8 +48,6 @@ describe("fragmentor", () => {
         mintKey.publicKey,
         wallet.publicKey
       );
-
-      console.log({ ata });
 
       const mint_tx = new anchor.web3.Transaction().add(
         anchor.web3.SystemProgram.createAccount({
@@ -108,6 +104,7 @@ describe("fragmentor", () => {
 
     const vault = Keypair.generate();
 
+    // account holding the whole nft account data
     const [wholeNftPDA, wholeNftPDABump] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("whole_nft"),
@@ -117,17 +114,14 @@ describe("fragmentor", () => {
       program.programId
     );
 
-    const [fragmentedMintsPDA, fragmentedMintsPDABump] =
-      PublicKey.findProgramAddressSync(
-        [Buffer.from("fragments"), mintKey.publicKey.toBytes()],
-        program.programId
-      );
-
+    // vault auth that will manage tokens in n out
+    // the vault auth is the owner of the token account holding the original nft
     const [vaultAuthPDA, vaultAuthPDABump] = PublicKey.findProgramAddressSync(
       [Buffer.from(vault.publicKey.toBytes())],
       program.programId
     );
 
+    // token account holding the original nft
     const [wholeNftThronePDA, wholeNftThronePDABump] =
       PublicKey.findProgramAddressSync(
         [
@@ -140,15 +134,13 @@ describe("fragmentor", () => {
 
     console.log({ wholeNftThronePDA: wholeNftThronePDA.toBase58() });
     console.log({ vaultAuthPDA: vaultAuthPDA.toBase58() });
-    console.log({ fragmentedMintsPDA: fragmentedMintsPDA.toBase58() });
     console.log({ wholeNftPDA: wholeNftPDA.toBase58() });
     console.log({ wholeNftThronePDABump: wholeNftThronePDABump });
     console.log({ vaultAuthPDABump: vaultAuthPDABump });
-    console.log({ fragmentedMintsPDABump: fragmentedMintsPDABump });
     console.log({ wholeNftPDABump: wholeNftPDABump });
     console.log({ vault: vault.publicKey.toBase58() });
 
-    const acs: InitVaultInstructionAccounts = {
+    const initVaultIxAccs: InitVaultInstructionAccounts = {
       creator: wallet.publicKey,
       payer: wallet.publicKey,
       vault: vault.publicKey,
@@ -156,43 +148,80 @@ describe("fragmentor", () => {
     };
 
     const tx1 = new anchor.web3.Transaction().add(
-      createInitVaultInstruction(acs)
+      createInitVaultInstruction(initVaultIxAccs)
     );
 
     await program?.provider?.sendAndConfirm?.(tx1, [vault]);
 
-    (await Vault.gpaBuilder().run(provider.connection)).forEach((e) => {
-      const [a] = Vault.deserialize(e.account.data);
-      console.log("a", a.pretty());
-    });
-
-    const accs: FragmentInstructionAccounts = {
+    const fragmentIxAccs: FragmentInstructionAccounts = {
       mint: mintKey.publicKey,
       tokenProgram: TOKEN_PROGRAM_ID,
       payer: wallet.publicKey,
       systemProgram: SystemProgram.programId,
-      // wholeNft: wholeNftPDA,
       fragmenter: wallet.publicKey,
       mintSource: mintAta,
       rent: anchor.web3.SYSVAR_RENT_PUBKEY,
       wholeNftThrone: wholeNftThronePDA,
 
-      authority: vaultAuthPDA, // change
+      //this authority is an account derived from the vault address that is the owner of the ATA holding the whole NFT
+      authority: vaultAuthPDA,
       vault: vault.publicKey,
       wholeNft: wholeNftPDA,
     };
 
+    console.log({vaultAuthPDA: vaultAuthPDA.toBase58()})
+
     const tx = new anchor.web3.Transaction().add(
-      createFragmentInstruction(accs, {
+      createFragmentInstruction(fragmentIxAccs, {
         bumpAuth: vaultAuthPDABump,
         originalNft: mintKey.publicKey,
         fragmentedNfts: [fragment1.publicKey, fragment2.publicKey],
       })
     );
     await program?.provider?.sendAndConfirm?.(tx, [wallet.payer]);
+
+    Vault.gpaBuilder()
+      .addFilter("owner", wallet.publicKey)
+      .run(provider.connection)
+      .then((vaults) => {
+        vaults.forEach((acc) => {
+          const [vaultData] = Vault.deserialize(acc.account.data);
+          console.log("Vault", vaultData.pretty());
+          const owner = vaultData.owner.toBase58();
+          assert.equal(owner, wallet.publicKey.toBase58());
+          const authority = vaultData.authority.toBase58();
+          assert.equal(authority, vaultAuthPDA.toBase58());
+          const authoritySeed = vaultData.authoritySeed.toBase58();
+          assert.equal(authoritySeed, vault.publicKey.toBase58());
+          const boxes = vaultData.boxes;
+          assert.equal(boxes, 1);
+        });
+      });
+
+    WholeNft.gpaBuilder()
+      .addFilter("originalMint", mintKey.publicKey)
+      .run(provider.connection)
+      .then((wholeNfts) => {
+        wholeNfts.forEach((acc) => {
+          const [wholeNft] = WholeNft.deserialize(acc.account.data);
+          console.log(
+            "WholeNft fragments",
+            wholeNft.fragments.map((x) => x.toBase58())
+          );
+          console.log(
+            "WholeNft originalMint",
+            wholeNft.originalMint.toBase58()
+          );
+          console.log("WholeNft parts", wholeNft.parts);
+          const _fragment1 = wholeNft.fragments[0].toBase58();
+          const _fragment2 = wholeNft.fragments[1].toBase58();
+          assert.equal(fragment1.publicKey.toBase58(), _fragment1);
+          assert.equal(fragment2.publicKey.toBase58(), _fragment2);
+          const originalMint = wholeNft.originalMint.toBase58();
+          assert.equal(originalMint, mintKey.publicKey.toBase58());
+          const parts = wholeNft.parts;
+          assert.equal(parts, 2);
+        });
+      });
   });
 });
-
-async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
