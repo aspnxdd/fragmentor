@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 
 use crate::state::*;
@@ -21,13 +22,9 @@ pub struct Fragment<'info> {
     pub vault: Account<'info, Vault>,
 
     // @TODO - make authority a from vault
-    #[account(init_if_needed, seeds = [
-        b"whole_nft_throne".as_ref(),
-        vault.key().as_ref(),
-    ],
-    bump,
-    token::mint = mint,
-    token::authority = authority,
+    #[account(init_if_needed,
+    associated_token::mint = mint,
+    associated_token::authority = authority,
     payer = payer)]
     pub whole_nft_throne: Account<'info, TokenAccount>,
 
@@ -59,6 +56,9 @@ pub struct Fragment<'info> {
     pub system_program: Program<'info, System>,
 
     pub rent: Sysvar<'info, Rent>,
+
+    pub associated_token_program: Program<'info, AssociatedToken>,
+
 }
 
 impl<'info> Fragment<'info> {
@@ -84,7 +84,7 @@ pub fn handler(
     ctx.accounts.whole_nft.parts = ctx.accounts.fragmented_mints.mints.len() as u8;
     let vault = &ctx.accounts.vault;
 
-    token::transfer(ctx.accounts.transfer_ctx().with_signer(&[&vault.vault_seeds()]), 1)?;
+    // token::transfer(ctx.accounts.transfer_ctx().with_signer(&[&vault.vault_seeds()]), 1)?;
 
     Ok(())
 }

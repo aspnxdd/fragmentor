@@ -185,6 +185,7 @@ describe("fragmentor", () => {
       })
     );
 
+    // the payer shoudl be the vault, whcih has its own keypair like a Bank
     await program?.provider?.sendAndConfirm?.(tx, [wallet.payer]);
   });
 });
