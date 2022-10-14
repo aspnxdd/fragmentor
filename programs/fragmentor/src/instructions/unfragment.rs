@@ -62,9 +62,9 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
 
     let mut mint_accs = vec![];
     let mut ata_accs = vec![];
-
+    let remaining_accs_len = remaining_accs.len();
     // get all the mint accs
-    for _ in 0..((remaining_accs.len() / 2) ) {
+    for _ in 0..(remaining_accs_len / 2) {
         let acc = next_account_info(remaining_accs);
         match acc {
             Ok(acc) => {
@@ -79,7 +79,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     }
 
     // get all the ata accs
-    for _ in 0..((remaining_accs.len() / 2) ) {
+    for _ in 0..(remaining_accs_len / 2) {
         let acc = next_account_info(remaining_accs);
         match acc {
             Ok(acc) => {
@@ -96,6 +96,9 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     if mint_accs.len() != fragmented_nfts.len() {
         return Err(error!(Errors::NotEnoughMints));
     }
+    if ata_accs.len() != fragmented_nfts.len() {
+        return Err(error!(Errors::NotEnoughMints));
+    }
     // check user is sending all the fragments
     let accum = mint_accs.iter().fold(0, |acc, mint| {
         if fragmented_nfts.contains(&mint.key()) {
@@ -106,19 +109,32 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     });
     assert_eq!(accum, fragmented_nfts.len());
 
-        
+    // msg!("burning 1 {}", mint_accs[0].key());
+    // msg!("burning 2 {}", mint_accs[1].key());
 
-    for fragmented_nft in &fragmented_nfts {
+    // msg!("burning ata_accs1 {}", ata_accs[0].key());
+    // msg!("burning ata_accs2 {}", ata_accs[1].key());
+
+    // msg!("burning 1- {}", fragmented_nfts[0].key());
+    // msg!("burning 2- {}", fragmented_nfts[1].key());
+
+    // for fragmented_nft in &fragmented_nfts {
         // burn fragmented nft
         let mint_acc = mint_accs
             .iter()
-            .find(|mint| mint.key() == fragmented_nft.key())
+            .find(|&&mint| mint.key() == fragmented_nfts[1].key())
             .unwrap();
         let ata_acc = ata_accs
             .iter()
-            .find(|ata| ata.key() == get_associated_token_address(&owner.key(), &mint_acc.key()))
+            .find(|&&ata| {
+                ata.key() == get_associated_token_address(&owner.key(), &fragmented_nfts[1].key())
+            })
             .unwrap();
-        msg!("burning {}", mint_acc.key());
+        msg!("burning m {}", mint_acc.key());
+        msg!("burning a {}", ata_acc.key());
+        msg!("burning x1 {}", get_associated_token_address(&owner.key(), &fragmented_nfts[0].key()).key());
+        msg!("burning x2 {}", get_associated_token_address(&owner.key(), &fragmented_nfts[1].key()).key());
+        
         let cpi_accounts = Burn {
             authority: ctx.accounts.payer.to_account_info(),
             from: ata_acc.to_account_info(),
@@ -131,7 +147,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
 
         // remove fragmented nft from whole_nft
         // whole_nft.fragments.retain(|x| x != fragmented_nft);
-    }
+    // }
 
     // let vault = &mut ctx.accounts.vault;
     // vault.boxes -= 1;
