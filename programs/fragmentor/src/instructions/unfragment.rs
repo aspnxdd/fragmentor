@@ -1,16 +1,10 @@
+use crate::errors::ErrorCode;
+use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    associated_token::{get_associated_token_address},
+    associated_token::get_associated_token_address,
     token::{self, Burn, Token, TokenAccount},
 };
-
-use crate::state::*;
-
-#[error_code]
-pub enum Errors {
-    #[msg("NotEnoughMints")]
-    NotEnoughMints,
-}
 
 #[derive(Accounts)]
 #[instruction(bump_auth: u8)]
@@ -38,119 +32,100 @@ pub struct Unfragment<'info> {
     pub rent: Sysvar<'info, Rent>,
 }
 
-// impl<'info> Unfragment<'info> {
-//     fn burn_ctx(&self) -> CpiContext<'_, '_, '_, 'info, Burn<'info>> {
-//         CpiContext::new(
-//             self.token_program.to_account_info(),
-//             Burn {
-//                 from: self.mint_source.to_account_info(),
-//                 mint: self.mint.to_account_info(),
-//                 authority: self.payer.to_account_info(),
-//             },
-//         )
-//     }
-// }
-
 pub fn handler<'key, 'accounts, 'remaining, 'info>(
     ctx: Context<'key, 'accounts, 'remaining, 'info, Unfragment<'info>>,
     fragmented_nfts: Vec<Pubkey>,
 ) -> Result<()> {
-    let vault = &*ctx.accounts.vault;
     let whole_nft = &mut *ctx.accounts.whole_nft;
     let owner = ctx.accounts.payer.key();
+
+    // the remaining accs must be passed in the following order:
+    // 1. the first items must be the fragmented nfts accounts
+    // 2. the first items must be the fragmented nfts associated token accounts (ata)
     let remaining_accs = &mut ctx.remaining_accounts.iter();
+    let remaining_accs_len = remaining_accs.len();
 
     let mut mint_accs = vec![];
     let mut ata_accs = vec![];
-    let remaining_accs_len = remaining_accs.len();
-    // get all the mint accs
+
+    // map all the mint accs
     for _ in 0..(remaining_accs_len / 2) {
         let acc = next_account_info(remaining_accs);
         match acc {
             Ok(acc) => {
                 mint_accs.push(acc);
-                msg!("got acc {}", acc.key());
-                msg!("got acc owner {}", acc.owner.key());
             }
             Err(_) => {
-                return Err(Errors::NotEnoughMints.into());
+                return Err(error!(ErrorCode::NftsMismatch));
             }
         }
     }
 
-    // get all the ata accs
+    // map all the ata accs
     for _ in 0..(remaining_accs_len / 2) {
         let acc = next_account_info(remaining_accs);
         match acc {
             Ok(acc) => {
                 ata_accs.push(acc);
-                msg!("got acc {}", acc.key());
-                msg!("got acc owner {}", acc.owner.key());
             }
             Err(_) => {
-                return Err(Errors::NotEnoughMints.into());
+                return Err(error!(ErrorCode::NftsMismatch));
             }
         }
     }
 
     if mint_accs.len() != fragmented_nfts.len() {
-        return Err(error!(Errors::NotEnoughMints));
+        return Err(error!(ErrorCode::NftsMismatch));
     }
     if ata_accs.len() != fragmented_nfts.len() {
-        return Err(error!(Errors::NotEnoughMints));
+        return Err(error!(ErrorCode::NftsMismatch));
     }
-    // check user is sending all the fragments
+
+    // check user is sending some fragments
     let accum = mint_accs.iter().fold(0, |acc, mint| {
-        if fragmented_nfts.contains(&mint.key()) {
-            acc + 1
-        } else {
-            acc
+        if !fragmented_nfts.contains(&mint.key()) {
+            return acc;
         }
+        acc + 1
     });
-    assert_eq!(accum, fragmented_nfts.len());
+    if accum != fragmented_nfts.len() {
+        return Err(error!(ErrorCode::MintAccsMismatch));
+    }
 
-    // msg!("burning 1 {}", mint_accs[0].key());
-    // msg!("burning 2 {}", mint_accs[1].key());
-
-    // msg!("burning ata_accs1 {}", ata_accs[0].key());
-    // msg!("burning ata_accs2 {}", ata_accs[1].key());
-
-    // msg!("burning 1- {}", fragmented_nfts[0].key());
-    // msg!("burning 2- {}", fragmented_nfts[1].key());
-
+    // burn fragmented nft
     for fragmented_nft in fragmented_nfts {
-        // burn fragmented nft
         let mint_acc = mint_accs
             .iter()
-            .find(|&&mint| mint.key() == fragmented_nft.key())
-            .unwrap();
-        let ata_acc = ata_accs
-            .iter()
-            .find(|&&ata| {
-                ata.key() == get_associated_token_address(&owner.key(), &fragmented_nft.key())
-            })
-            .unwrap();
-        // msg!("burning m {}", mint_acc.key());
-        // msg!("burning a {}", ata_acc.key());
-        // msg!("burning x1 {}", get_associated_token_address(&owner.key(), &fragmented_nfts[0].key()).key());
-        // msg!("burning x2 {}", get_associated_token_address(&owner.key(), &fragmented_nfts[1].key()).key());
-        
+            .find(|&&mint| mint.key() == fragmented_nft.key());
+
+        if mint_acc.is_none() {
+            return Err(error!(ErrorCode::MintAccsMismatch));
+        }
+
+        let ata_acc = ata_accs.iter().find(|&&ata| {
+            ata.key() == get_associated_token_address(&owner.key(), &fragmented_nft.key())
+        });
+
+        if ata_acc.is_none() {
+            return Err(error!(ErrorCode::AtaAccsMismatch));
+        }
+
         let cpi_accounts = Burn {
             authority: ctx.accounts.payer.to_account_info(),
-            from: ata_acc.to_account_info(),
-            mint: mint_acc.to_account_info(),
+            from: ata_acc.unwrap().to_account_info(),
+            mint: mint_acc.unwrap().to_account_info(),
         };
 
         let cpi_program = ctx.accounts.token_program.to_account_info();
         let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
         token::burn(cpi_ctx, 1)?;
 
-        // remove fragmented nft from whole_nft
-        // whole_nft.fragments.retain(|x| x != fragmented_nft);
+        // remove fragmented nft from whole_nft fragments vec
+        whole_nft
+            .fragments
+            .retain(|fragment| fragment != &fragmented_nft);
+        whole_nft.parts -= 1;
     }
-
-    // let vault = &mut ctx.accounts.vault;
-    // vault.boxes -= 1;
 
     Ok(())
 }
