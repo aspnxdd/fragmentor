@@ -100,13 +100,10 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     for fragmented_nft in &fragmented_nfts {
         let nft = fragmented_nft.clone();
         let ata = get_associated_token_address(&owner.key(), &fragmented_nft.key());
-        msg!("ata: {:?}", ata);
 
         let mint_acc = mint_accs
             .iter()
             .find(|&&mint| &mint.key() == &nft.key());
-
-        // msg!("mint_acc: {:?}", mint_acc);
 
         if mint_acc.is_none() {
             return Err(error!(ErrorCode::MintAccsMismatch));
@@ -116,8 +113,6 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
             .iter()
             .find(|&&ata_acc_info| ata_acc_info.key() == ata);
             
-        // msg!("fragmented_nft: {:?}", fragmented_nft.key());
-
         if ata_acc.is_none() {
             return Err(error!(ErrorCode::AtaAccsMismatch));
         }

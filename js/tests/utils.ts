@@ -1,8 +1,23 @@
 import * as anchor from "@project-serum/anchor";
-import { MINT_SIZE, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, createInitializeMintInstruction, createAssociatedTokenAccountInstruction, createTransferCheckedInstruction } from "@solana/spl-token";
-import { SystemProgram, PublicKey, Keypair, Transaction } from "@solana/web3.js";
+import {
+  MINT_SIZE,
+  getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
+  createInitializeMintInstruction,
+  createAssociatedTokenAccountInstruction,
+  createTransferCheckedInstruction,
+} from "@solana/spl-token";
+import {
+  SystemProgram,
+  PublicKey,
+  Keypair,
+  Transaction,
+} from "@solana/web3.js";
 import { Fragmentor } from "../../target/types/fragmentor";
-import { MintNftInstructionAccounts, createMintNftInstruction } from "../src/generated/instructions/mintNft";
+import {
+  MintNftInstructionAccounts,
+  createMintNftInstruction,
+} from "../src/generated/instructions/mintNft";
 
 export const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
   "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
@@ -41,15 +56,12 @@ export const getMasterEdition = async (
 
 anchor.setProvider(anchor.AnchorProvider.env());
 export const provider = anchor.getProvider();
-export const program = anchor.workspace.Fragmentor as anchor.Program<Fragmentor>;
+export const program = anchor.workspace
+  .Fragmentor as anchor.Program<Fragmentor>;
 export const wallet = anchor.Wallet.local();
 
 export async function buildMintNftIx(): Promise<
-  [
-    anchor.web3.Keypair,
-    anchor.web3.PublicKey,
-    anchor.web3.TransactionInstruction
-  ]
+  [anchor.web3.Keypair, anchor.web3.TransactionInstruction]
 > {
   const lamports = await provider.connection.getMinimumBalanceForRentExemption(
     MINT_SIZE
@@ -105,10 +117,14 @@ export async function buildMintNftIx(): Promise<
     mintKey: mintKey.publicKey,
   });
 
-  return [mintKey, ata, ix];
+  return [mintKey, ix];
 }
 
-export async function transferMint(mint: PublicKey, to: PublicKey, signer: Keypair) {
+export async function transferMint(
+  mint: PublicKey,
+  to: PublicKey,
+  signer: Keypair
+) {
   const destAta = await getAssociatedTokenAddress(mint, to);
   const sourceAta = await getAssociatedTokenAddress(mint, wallet.publicKey);
   const ix1 = createAssociatedTokenAccountInstruction(

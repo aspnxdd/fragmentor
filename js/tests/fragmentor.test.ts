@@ -1,5 +1,4 @@
 import * as anchor from "@project-serum/anchor";
-import { Fragmentor } from "../../target/types/fragmentor";
 
 import {
   createFragmentInstruction,
@@ -16,26 +15,57 @@ import {
 import { Vault } from "../src/generated/accounts/Vault";
 import { WholeNft } from "../src/generated/accounts/WholeNft";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 import {
-  Keypair,
-  PublicKey,
-  SystemProgram,
-  Transaction,
-} from "@solana/web3.js";
-import { buildMintNftIx, program, provider, transferMint, wallet } from "./utils";
-import { assert } from "chai";
+  buildMintNftIx,
+  program,
+  provider,
+  transferMint,
+  wallet,
+} from "./utils";
+import { expect, assert } from "chai";
+import { getVaultAuthPda, getWholeNftPda, getWholeNftThronePda } from "./pda";
 
-describe("fragmentor", () => {
-  
-  it("Mint NFTs", async () => {
-    const [mintKey, mintAta, ix00] = await buildMintNftIx();
-    const [fragment1, fragment1ata, ix01] = await buildMintNftIx();
-    const [fragment2, fragment2ata, ix02] = await buildMintNftIx();
-    const [fragment3, fragment3ata, ix03] = await buildMintNftIx();
-    const [fragment4, fragment4ata, ix04] = await buildMintNftIx();
-    const [fragment5, fragment5ata, ix05] = await buildMintNftIx();
-    const [fragment6, fragment6ata, ix06] = await buildMintNftIx();
-    const [fragment7, fragment7ata, ix07] = await buildMintNftIx();
+describe("fragmentor", async () => {
+  let mintKey: anchor.web3.Keypair;
+  let fragment1: anchor.web3.Keypair;
+  let fragment2: anchor.web3.Keypair;
+  let fragment3: anchor.web3.Keypair;
+  let fragment4: anchor.web3.Keypair;
+  let fragment5: anchor.web3.Keypair;
+  let fragment6: anchor.web3.Keypair;
+  let fragment7: anchor.web3.Keypair;
+
+  let destAtaMint1: anchor.web3.PublicKey;
+  let destAtaFrag1: anchor.web3.PublicKey;
+  let destAtaFrag2: anchor.web3.PublicKey;
+  let destAtaFrag3: anchor.web3.PublicKey;
+  let destAtaFrag4: anchor.web3.PublicKey;
+  let destAtaFrag5: anchor.web3.PublicKey;
+  let destAtaFrag6: anchor.web3.PublicKey;
+  let destAtaFrag7: anchor.web3.PublicKey;
+
+  const secondWallet = Keypair.generate();
+  const vault = Keypair.generate();
+
+  before("Mint and transfer NFTs", async () => {
+    const [_mintKey, ix00] = await buildMintNftIx();
+    const [_fragment1, ix01] = await buildMintNftIx();
+    const [_fragment2, ix02] = await buildMintNftIx();
+    const [_fragment3, ix03] = await buildMintNftIx();
+    const [_fragment4, ix04] = await buildMintNftIx();
+    const [_fragment5, ix05] = await buildMintNftIx();
+    const [_fragment6, ix06] = await buildMintNftIx();
+    const [_fragment7, ix07] = await buildMintNftIx();
+
+    mintKey = _mintKey;
+    fragment1 = _fragment1;
+    fragment2 = _fragment2;
+    fragment3 = _fragment3;
+    fragment4 = _fragment4;
+    fragment5 = _fragment5;
+    fragment6 = _fragment6;
+    fragment7 = _fragment7;
 
     // max can jam 5 ixs into 1 tx
     const t1 = new Transaction().add(ix00, ix01, ix02, ix03, ix04);
@@ -43,83 +73,52 @@ describe("fragmentor", () => {
     await program?.provider?.sendAndConfirm?.(t1, [wallet.payer]);
     await program?.provider?.sendAndConfirm?.(t2, [wallet.payer]);
 
-    const secondWallet = Keypair.generate();
     console.log({ secondWallet: secondWallet.publicKey.toBase58() });
     await provider.connection.requestAirdrop(secondWallet.publicKey, 1e9);
 
-    const destAtaMint1 = await transferMint(
+    destAtaMint1 = await transferMint(
       mintKey.publicKey,
       secondWallet.publicKey,
       wallet.payer
     );
-    const destAtaFrag1 = await transferMint(
+    destAtaFrag1 = await transferMint(
       fragment1.publicKey,
       secondWallet.publicKey,
       wallet.payer
     );
-    const destAtaFrag2 = await transferMint(
+    destAtaFrag2 = await transferMint(
       fragment2.publicKey,
       secondWallet.publicKey,
       wallet.payer
     );
-    const destAtaFrag3 = await transferMint(
+    destAtaFrag3 = await transferMint(
       fragment3.publicKey,
       secondWallet.publicKey,
       wallet.payer
     );
-    const destAtaFrag4 = await transferMint(
+    destAtaFrag4 = await transferMint(
       fragment4.publicKey,
       secondWallet.publicKey,
       wallet.payer
     );
-    const destAtaFrag5 = await transferMint(
+    destAtaFrag5 = await transferMint(
       fragment5.publicKey,
       secondWallet.publicKey,
       wallet.payer
     );
-    const destAtaFrag6 = await transferMint(
+    destAtaFrag6 = await transferMint(
       fragment6.publicKey,
       secondWallet.publicKey,
       wallet.payer
     );
-    const destAtaFrag7 = await transferMint(
+    destAtaFrag7 = await transferMint(
       fragment7.publicKey,
       secondWallet.publicKey,
       wallet.payer
     );
+  });
 
-    console.log("nfts trasnferred");
-
-    const vault = Keypair.generate();
-
-    // account holding the whole nft account data
-    const [wholeNftPDA, wholeNftPDABump] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("whole_nft"),
-        mintKey.publicKey.toBytes(),
-        vault.publicKey.toBytes(),
-      ],
-      program?.programId
-    );
-
-    // vault auth that will manage tokens in n out
-    // the vault auth is the owner of the token account holding the original nft
-    const [vaultAuthPDA, vaultAuthPDABump] = PublicKey.findProgramAddressSync(
-      [Buffer.from(vault.publicKey.toBytes())],
-      program.programId
-    );
-
-    // token account holding the original nft
-    const [wholeNftThronePDA, wholeNftThronePDABump] =
-      PublicKey.findProgramAddressSync(
-        [
-          Buffer.from("whole_nft_throne"),
-          mintKey.publicKey.toBytes(),
-          vault.publicKey.toBytes(),
-        ],
-        program.programId
-      );
-
+  it("Init Vault", async () => {
     // console.log({ wholeNftThronePDA: wholeNftThronePDA.toBase58() });
     // console.log({ vaultAuthPDA: vaultAuthPDA.toBase58() });
     // console.log({ wholeNftPDA: wholeNftPDA.toBase58() });
@@ -127,7 +126,10 @@ describe("fragmentor", () => {
     // console.log({ vaultAuthPDABump: vaultAuthPDABump });
     // console.log({ wholeNftPDABump: wholeNftPDABump });
     // console.log({ vault: vault.publicKey.toBase58() });
-
+    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(
+      mintKey.publicKey,
+      vault.publicKey
+    );
     const initVaultIxAccs: InitVaultInstructionAccounts = {
       creator: wallet.publicKey,
       payer: wallet.publicKey,
@@ -138,8 +140,41 @@ describe("fragmentor", () => {
     const tx1 = new anchor.web3.Transaction().add(
       createInitVaultInstruction(initVaultIxAccs)
     );
-    console.log("vault created");
     await program?.provider?.sendAndConfirm?.(tx1, [vault]);
+    console.log("vault created");
+
+    Vault.gpaBuilder()
+      .addFilter("owner", wallet.publicKey)
+      .run(provider.connection)
+      .then((vaults) => {
+        vaults.forEach((acc) => {
+          const [vaultData] = Vault.deserialize(acc.account.data);
+          console.log("Vault", vaultData.pretty());
+          const owner = vaultData.owner.toBase58();
+          expect(owner).to.eq(secondWallet.publicKey.toBase58());
+          const authority = vaultData.authority.toBase58();
+          expect(authority).to.eq(vaultAuthPDA.toBase58());
+          const authoritySeed = vaultData.authoritySeed.toBase58();
+          expect(authoritySeed).to.eq(vault.publicKey.toBase58());
+          const boxes = vaultData.boxes;
+          expect(boxes).to.eq(0);
+        });
+      });
+  });
+
+  it("Init Fragment", async () => {
+    const [wholeNftThronePDA, wholeNftThronePDABump] = getWholeNftThronePda(
+      mintKey.publicKey,
+      vault.publicKey
+    );
+    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(
+      mintKey.publicKey,
+      vault.publicKey
+    );
+    const [wholeNftPDA, wholeNftPDABump] = getWholeNftPda(
+      mintKey.publicKey,
+      vault.publicKey
+    );
 
     const fragmentIxAccs: FragmentInstructionAccounts = {
       mint: mintKey.publicKey,
@@ -174,26 +209,6 @@ describe("fragmentor", () => {
     );
     await program?.provider?.sendAndConfirm?.(tx, [secondWallet]);
 
-    console.log("fragments done");
-
-    Vault.gpaBuilder()
-      .addFilter("owner", wallet.publicKey)
-      .run(provider.connection)
-      .then((vaults) => {
-        vaults.forEach((acc) => {
-          const [vaultData] = Vault.deserialize(acc.account.data);
-          console.log("Vault", vaultData.pretty());
-          const owner = vaultData.owner.toBase58();
-          assert.equal(owner, secondWallet.publicKey.toBase58());
-          const authority = vaultData.authority.toBase58();
-          assert.equal(authority, vaultAuthPDA.toBase58());
-          const authoritySeed = vaultData.authoritySeed.toBase58();
-          assert.equal(authoritySeed, vault.publicKey.toBase58());
-          const boxes = vaultData.boxes;
-          assert.equal(boxes, 1);
-        });
-      });
-
     WholeNft.gpaBuilder()
       .addFilter("originalMint", mintKey.publicKey)
       .run(provider.connection)
@@ -211,7 +226,7 @@ describe("fragmentor", () => {
           console.log("WholeNft parts", wholeNft.parts);
           const _fragment1 = wholeNft.fragments[0].toBase58();
           const _fragment2 = wholeNft.fragments[1].toBase58();
-          assert.equal(fragment1.publicKey.toBase58(), _fragment1);
+          expect(fragment1.publicKey.toBase58()).eq(_fragment1);
           assert.equal(fragment2.publicKey.toBase58(), _fragment2);
           const originalMint = wholeNft.originalMint.toBase58();
           assert.equal(originalMint, mintKey.publicKey.toBase58());
@@ -219,8 +234,21 @@ describe("fragmentor", () => {
           assert.equal(parts, 2);
         });
       });
+  });
+
+  it("Init unfragment", async () => {
+    const [wholeNftThronePDA] = getWholeNftThronePda(
+      mintKey.publicKey,
+      vault.publicKey
+    );
+    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(
+      mintKey.publicKey,
+      vault.publicKey
+    );
+    const [wholeNftPDA] = getWholeNftPda(mintKey.publicKey, vault.publicKey);
 
     const remainingAccounts: anchor.web3.AccountMeta[] = [];
+
     remainingAccounts.push({
       pubkey: fragment1.publicKey,
       isWritable: true,
@@ -361,7 +389,6 @@ describe("fragmentor", () => {
     //     fragmentedNfts: [fragment7.publicKey],
     //   })
     // );
-    console.log({tx2});
     await program?.provider?.sendAndConfirm?.(tx2, [secondWallet]);
 
     WholeNft.gpaBuilder()
