@@ -3,6 +3,9 @@ seeds = false
 [programs.localnet]
 fragmentor = "CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed"
 
+[programs.devnet]
+fragmentor = "CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed"
+
 [registry]
 url = "https://anchor.projectserum.com"
 

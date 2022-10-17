@@ -8,7 +8,7 @@ use crate::constants::ANCHOR_DISC;
 #[derive(Accounts)]
 #[instruction(bump_auth: u8)]
 pub struct Fragment<'info> {
-    #[account(mut, has_one = authority, constraint = payer.key()==vault.owner.key())]
+    #[account(mut, has_one = authority)]
     pub vault: Account<'info, Vault>,
 
     #[account(init_if_needed, seeds = [

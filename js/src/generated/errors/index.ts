@@ -12,24 +12,93 @@ const createErrorFromCodeLookup: Map<number, () => ErrorWithCode> = new Map()
 const createErrorFromNameLookup: Map<string, () => ErrorWithCode> = new Map()
 
 /**
- * NotEnoughMints: 'NotEnoughMints'
+ * NftsMismatch: 'Nfts mismatch'
  *
  * @category Errors
  * @category generated
  */
-export class NotEnoughMintsError extends Error {
+export class NftsMismatchError extends Error {
   readonly code: number = 0x1770
-  readonly name: string = 'NotEnoughMints'
+  readonly name: string = 'NftsMismatch'
   constructor() {
-    super('NotEnoughMints')
+    super('Nfts mismatch')
     if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, NotEnoughMintsError)
+      Error.captureStackTrace(this, NftsMismatchError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1770, () => new NotEnoughMintsError())
-createErrorFromNameLookup.set('NotEnoughMints', () => new NotEnoughMintsError())
+createErrorFromCodeLookup.set(0x1770, () => new NftsMismatchError())
+createErrorFromNameLookup.set('NftsMismatch', () => new NftsMismatchError())
+
+/**
+ * MintAccsMismatch: 'MintAccs mismatch'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class MintAccsMismatchError extends Error {
+  readonly code: number = 0x1771
+  readonly name: string = 'MintAccsMismatch'
+  constructor() {
+    super('MintAccs mismatch')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, MintAccsMismatchError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1771, () => new MintAccsMismatchError())
+createErrorFromNameLookup.set(
+  'MintAccsMismatch',
+  () => new MintAccsMismatchError()
+)
+
+/**
+ * AtaAccsMismatch: 'AtaAccs mismatch'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class AtaAccsMismatchError extends Error {
+  readonly code: number = 0x1772
+  readonly name: string = 'AtaAccsMismatch'
+  constructor() {
+    super('AtaAccs mismatch')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, AtaAccsMismatchError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1772, () => new AtaAccsMismatchError())
+createErrorFromNameLookup.set(
+  'AtaAccsMismatch',
+  () => new AtaAccsMismatchError()
+)
+
+/**
+ * UnknownInstruction: 'unknown instruction called'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class UnknownInstructionError extends Error {
+  readonly code: number = 0x1773
+  readonly name: string = 'UnknownInstruction'
+  constructor() {
+    super('unknown instruction called')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, UnknownInstructionError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1773, () => new UnknownInstructionError())
+createErrorFromNameLookup.set(
+  'UnknownInstruction',
+  () => new UnknownInstructionError()
+)
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

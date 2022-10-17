@@ -48,6 +48,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     let mut mint_accs = vec![];
     let mut ata_accs = vec![];
 
+    msg!("remaining_accs_len: {}", remaining_accs_len);
     // map all the mint accs
     for _ in 0..(remaining_accs_len / 2) {
         let acc = next_account_info(remaining_accs);
@@ -73,6 +74,9 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
             }
         }
     }
+    msg!("mint_accs: {}", mint_accs.len());
+    msg!("ata_accs_len: {}", ata_accs.len());
+    msg!("fragmented_nfts: {}", fragmented_nfts.len());
 
     if mint_accs.len() != fragmented_nfts.len() {
         return Err(error!(ErrorCode::NftsMismatch));
@@ -81,7 +85,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         return Err(error!(ErrorCode::NftsMismatch));
     }
 
-    // check user is sending some fragments
+    // // check user is sending some fragments
     let accum = mint_accs.iter().fold(0, |acc, mint| {
         if !fragmented_nfts.contains(&mint.key()) {
             return acc;
@@ -92,19 +96,27 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         return Err(error!(ErrorCode::MintAccsMismatch));
     }
 
-    // burn fragmented nft
-    for fragmented_nft in fragmented_nfts {
+    // // burn fragmented nft
+    for fragmented_nft in &fragmented_nfts {
+        let nft = fragmented_nft.clone();
+        let ata = get_associated_token_address(&owner.key(), &fragmented_nft.key());
+        msg!("ata: {:?}", ata);
+
         let mint_acc = mint_accs
             .iter()
-            .find(|&&mint| mint.key() == fragmented_nft.key());
+            .find(|&&mint| &mint.key() == &nft.key());
+
+        // msg!("mint_acc: {:?}", mint_acc);
 
         if mint_acc.is_none() {
             return Err(error!(ErrorCode::MintAccsMismatch));
         }
 
-        let ata_acc = ata_accs.iter().find(|&&ata| {
-            ata.key() == get_associated_token_address(&owner.key(), &fragmented_nft.key())
-        });
+        let ata_acc = ata_accs
+            .iter()
+            .find(|&&ata_acc_info| ata_acc_info.key() == ata);
+            
+        // msg!("fragmented_nft: {:?}", fragmented_nft.key());
 
         if ata_acc.is_none() {
             return Err(error!(ErrorCode::AtaAccsMismatch));
@@ -123,7 +135,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         // remove fragmented nft from whole_nft fragments vec
         whole_nft
             .fragments
-            .retain(|fragment| fragment != &fragmented_nft);
+            .retain(|fragment| fragment != fragmented_nft);
         whole_nft.parts -= 1;
     }
 
