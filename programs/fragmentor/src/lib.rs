@@ -36,4 +36,12 @@ pub mod fragmentor {
     ) -> Result<()> {
         instructions::unfragment::handler(ctx, fragmented_nfts)
     }
+    pub fn claim(
+        ctx: Context<Claim>,
+        _bump_auth: u8,
+        _bump_whole_nft: u8,
+        _bump_whole_nft_throne: u8,
+    ) -> Result<()> {
+        instructions::claim::handler(ctx)
+    }
 }

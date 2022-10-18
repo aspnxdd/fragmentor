@@ -12,9 +12,17 @@ import {
   createUnfragInstruction,
   UnfragInstructionAccounts,
 } from "../src/generated/instructions/unfrag";
+import {
+  createClaimInstruction,
+  ClaimInstructionAccounts,
+} from "../src/generated/instructions/claim";
 import { Vault } from "../src/generated/accounts/Vault";
 import { WholeNft } from "../src/generated/accounts/WholeNft";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 import { Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 import {
   buildMintNftIx,
@@ -383,12 +391,7 @@ describe("fragmentor", async () => {
         ],
       })
     );
-    // tx2.add(
-    //   createUnfragInstruction(unfragAccs3, {
-    //     bumpAuth: vaultAuthPDABump,
-    //     fragmentedNfts: [fragment7.publicKey],
-    //   })
-    // );
+
     await program?.provider?.sendAndConfirm?.(tx2, [secondWallet]);
 
     WholeNft.gpaBuilder()
@@ -407,5 +410,73 @@ describe("fragmentor", async () => {
           );
         });
       });
+  });
+  it("claim nft", async () => {
+    const [wholeNftThronePDA, wholeNftThronePDABump] = getWholeNftThronePda(
+      mintKey.publicKey,
+      vault.publicKey
+    );
+    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(
+      mintKey.publicKey,
+      vault.publicKey
+    );
+    const [wholeNftPDA, wholeNftPDABump] = getWholeNftPda(
+      mintKey.publicKey,
+      vault.publicKey
+    );
+
+    const mintDestAta = await getAssociatedTokenAddress(
+      mintKey.publicKey,
+      secondWallet.publicKey
+    );
+
+    const claimIxAccs: ClaimInstructionAccounts = {
+      tokenProgram: TOKEN_PROGRAM_ID,
+      payer: secondWallet.publicKey,
+      systemProgram: SystemProgram.programId,
+      rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      wholeNftThrone: wholeNftThronePDA,
+      authority: vaultAuthPDA,
+      vault: vault.publicKey,
+      wholeNft: wholeNftPDA,
+      mint: mintKey.publicKey,
+      mintDestAcc: mintDestAta,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    };
+
+    const tx = new anchor.web3.Transaction().add(
+      createClaimInstruction(claimIxAccs, {
+        bumpAuth: vaultAuthPDABump,
+        bumpWholeNft: wholeNftPDABump,
+        bumpWholeNftThrone: wholeNftThronePDABump,
+      })
+    );
+    await program?.provider?.sendAndConfirm?.(tx, [secondWallet]);
+
+    const response = await provider.connection.getParsedTokenAccountsByOwner(
+      secondWallet.publicKey,
+      {
+        mint: mintKey.publicKey,
+      }
+    );
+    const tokenAmount =
+      response.value[0].account.data.parsed.info.tokenAmount.amount;
+    
+    expect(tokenAmount).to.equal("1");
+
+    const vaults = await Vault.gpaBuilder()
+      .addFilter("owner", wallet.publicKey)
+      .run(provider.connection);
+    for (const acc of vaults) {
+      const [vaultData] = Vault.deserialize(acc.account.data);
+      const owner = vaultData.owner.toBase58();
+      expect(owner).to.equal(secondWallet.publicKey.toBase58());
+      const authority = vaultData.authority.toBase58();
+      expect(authority).to.equal(vaultAuthPDA.toBase58());
+      const authoritySeed = vaultData.authoritySeed.toBase58();
+      expect(authoritySeed).to.equal(vault.publicKey.toBase58());
+      const boxes = (vaultData.boxes as anchor.BN).toNumber();
+      expect(boxes).to.equal(0);
+    }
   });
 });

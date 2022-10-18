@@ -87,7 +87,6 @@ pub fn handler(
 
     let vault = &mut ctx.accounts.vault;
     vault.boxes += 1;
-    vault.owner = ctx.accounts.payer.key();
 
     Ok(())
 }

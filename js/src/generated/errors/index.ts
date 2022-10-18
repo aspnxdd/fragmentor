@@ -101,6 +101,29 @@ createErrorFromNameLookup.set(
 )
 
 /**
+ * NotAllFragmentsDestroyed: 'Not all fragments have been destroyed'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class NotAllFragmentsDestroyedError extends Error {
+  readonly code: number = 0x1774
+  readonly name: string = 'NotAllFragmentsDestroyed'
+  constructor() {
+    super('Not all fragments have been destroyed')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, NotAllFragmentsDestroyedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1774, () => new NotAllFragmentsDestroyedError())
+createErrorFromNameLookup.set(
+  'NotAllFragmentsDestroyed',
+  () => new NotAllFragmentsDestroyedError()
+)
+
+/**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  * @category generated

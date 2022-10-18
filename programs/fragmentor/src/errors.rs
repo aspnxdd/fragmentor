@@ -20,4 +20,7 @@ pub enum ErrorCode {
     #[msg("unknown instruction called")]
     UnknownInstruction,
 
+    #[msg("Not all fragments have been destroyed")]
+    NotAllFragmentsDestroyed,
+
 }
