@@ -13,7 +13,7 @@ export function getWholeNftPda(mintKey: PublicKey, vault: PublicKey):PDA {
 
 // vault auth that will manage tokens in n out
 // the vault auth is the owner of the token account holding the original nft
-export function getVaultAuthPda(mintKey: PublicKey, vault: PublicKey):PDA {
+export function getVaultAuthPda(vault: PublicKey):PDA {
   const [vaultAuthPDA, vaultAuthPDABump] = PublicKey.findProgramAddressSync(
     [Buffer.from(vault.toBytes())],
     program.programId

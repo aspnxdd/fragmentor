@@ -134,10 +134,7 @@ describe("fragmentor", async () => {
     // console.log({ vaultAuthPDABump: vaultAuthPDABump });
     // console.log({ wholeNftPDABump: wholeNftPDABump });
     // console.log({ vault: vault.publicKey.toBase58() });
-    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(
-      mintKey.publicKey,
-      vault.publicKey
-    );
+    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(vault.publicKey);
     const initVaultIxAccs: InitVaultInstructionAccounts = {
       creator: wallet.publicKey,
       payer: wallet.publicKey,
@@ -176,10 +173,7 @@ describe("fragmentor", async () => {
       mintKey.publicKey,
       vault.publicKey
     );
-    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(
-      mintKey.publicKey,
-      vault.publicKey
-    );
+    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(vault.publicKey);
     const [wholeNftPDA, wholeNftPDABump] = getWholeNftPda(
       mintKey.publicKey,
       vault.publicKey
@@ -218,31 +212,30 @@ describe("fragmentor", async () => {
     );
     await program?.provider?.sendAndConfirm?.(tx, [secondWallet]);
 
-    WholeNft.gpaBuilder()
+    const wholeNfts = await WholeNft.gpaBuilder()
       .addFilter("originalMint", mintKey.publicKey)
-      .run(provider.connection)
-      .then((wholeNfts) => {
-        wholeNfts.forEach((acc) => {
-          const [wholeNft] = WholeNft.deserialize(acc.account.data);
-          console.log(
-            "WholeNft fragments",
-            wholeNft.fragments.map((x) => x.toBase58())
-          );
-          console.log(
-            "WholeNft originalMint",
-            wholeNft.originalMint.toBase58()
-          );
-          console.log("WholeNft parts", wholeNft.parts);
-          const _fragment1 = wholeNft.fragments[0].toBase58();
-          const _fragment2 = wholeNft.fragments[1].toBase58();
-          expect(fragment1.publicKey.toBase58()).eq(_fragment1);
-          assert.equal(fragment2.publicKey.toBase58(), _fragment2);
-          const originalMint = wholeNft.originalMint.toBase58();
-          assert.equal(originalMint, mintKey.publicKey.toBase58());
-          const parts = wholeNft.parts;
-          assert.equal(parts, 2);
-        });
-      });
+      .run(provider.connection);
+
+    for (const acc of wholeNfts) {
+      const [wholeNft] = WholeNft.deserialize(acc.account.data);
+
+      const _fragment1 = wholeNft.fragments[0].toBase58();
+      const _fragment2 = wholeNft.fragments[1].toBase58();
+      const _fragment3 = wholeNft.fragments[2].toBase58();
+      const _fragment4 = wholeNft.fragments[3].toBase58();
+      const _fragment5 = wholeNft.fragments[4].toBase58();
+      const _fragment6 = wholeNft.fragments[5].toBase58();
+      expect(fragment1.publicKey.toBase58()).to.equal(_fragment1);
+      expect(fragment2.publicKey.toBase58()).to.equal(_fragment2);
+      expect(fragment3.publicKey.toBase58()).to.equal(_fragment3);
+      expect(fragment4.publicKey.toBase58()).to.equal(_fragment4);
+      expect(fragment5.publicKey.toBase58()).to.equal(_fragment5);
+      expect(fragment6.publicKey.toBase58()).to.equal(_fragment6);
+      const originalMint = wholeNft.originalMint.toBase58();
+      expect(originalMint).to.equal(mintKey.publicKey.toBase58());
+      const parts = wholeNft.parts;
+      expect(parts).to.equal(6);
+    }
   });
 
   it("Init unfragment", async () => {
@@ -250,10 +243,7 @@ describe("fragmentor", async () => {
       mintKey.publicKey,
       vault.publicKey
     );
-    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(
-      mintKey.publicKey,
-      vault.publicKey
-    );
+    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(vault.publicKey);
     const [wholeNftPDA] = getWholeNftPda(mintKey.publicKey, vault.publicKey);
 
     const remainingAccounts: anchor.web3.AccountMeta[] = [];
@@ -416,10 +406,7 @@ describe("fragmentor", async () => {
       mintKey.publicKey,
       vault.publicKey
     );
-    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(
-      mintKey.publicKey,
-      vault.publicKey
-    );
+    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(vault.publicKey);
     const [wholeNftPDA, wholeNftPDABump] = getWholeNftPda(
       mintKey.publicKey,
       vault.publicKey
