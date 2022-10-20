@@ -1,4 +1,7 @@
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 import {
   type AccountInfo,
   Connection,
@@ -6,14 +9,16 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   AccountMeta,
+  TransactionInstruction,
 } from "@solana/web3.js";
-import {
-  getVaultAuthPda,
-  getWholeNftPda,
-  getWholeNftThronePda,
-} from "../tests/pda";
-import { Vault } from "./generated/accounts/Vault";
+import BN from "bn.js";
+import { getVaultAuthPda, getWholeNftPda, getWholeNftThronePda } from "./pda";
+import { Vault, VaultArgs } from "./generated/accounts/Vault";
 import { WholeNft } from "./generated/accounts/WholeNft";
+import {
+  ClaimInstructionAccounts,
+  createClaimInstruction,
+} from "./generated/instructions/claim";
 import {
   createFragmentInstruction,
   FragmentInstructionAccounts,
@@ -27,6 +32,10 @@ import {
   UnfragInstructionAccounts,
 } from "./generated/instructions/unfrag";
 
+type Replace<T, U extends PropertyKey, V> = Omit<T, U> & {
+  [K in U]: V;
+};
+
 export class FragmentorClient {
   private readonly connection: Connection;
 
@@ -34,7 +43,7 @@ export class FragmentorClient {
     this.connection = connection;
   }
 
-  buildInitVaultIx(owner: PublicKey, vault: PublicKey) {
+  static buildInitVaultIx(owner: PublicKey, vault: PublicKey) {
     const initVaultIxAccs: InitVaultInstructionAccounts = {
       creator: owner,
       payer: owner,
@@ -51,11 +60,16 @@ export class FragmentorClient {
       .run(this.connection);
   }
 
-  deserializeVault(account: AccountInfo<Buffer>) {
-    return Vault.deserialize(account.data);
+  static deserializeVault(
+    account: AccountInfo<Buffer>
+  ): [Replace<VaultArgs, "boxes", number>, number] {
+    const [_data, n] = Vault.deserialize(account.data);
+    const data = { ..._data } as Replace<VaultArgs, "boxes", number>;
+    data.boxes = (_data.boxes as BN).toNumber();
+    return [data, n];
   }
 
-  buildInitFragmentIx(
+  static buildInitFragmentIx(
     owner: PublicKey,
     vault: PublicKey,
     mintToFragment: PublicKey,
@@ -92,11 +106,11 @@ export class FragmentorClient {
       .run(this.connection);
   }
 
-  deserializeWholeNft(account: AccountInfo<Buffer>) {
+  static deserializeWholeNft(account: AccountInfo<Buffer>) {
     return WholeNft.deserialize(account.data);
   }
 
-  buildInitUnfragmentIx(
+  static buildInitUnfragmentIx(
     owner: PublicKey,
     vault: PublicKey,
     mintToUnfragment: PublicKey,
@@ -124,10 +138,7 @@ export class FragmentorClient {
         isSigner: false,
       });
     }
-    const remainingAccs = FragmentorClient.splitArrayIntoChunks(
-      remainingAccounts,
-      6
-    );
+
     const unfragAccs: UnfragInstructionAccounts = {
       tokenProgram: TOKEN_PROGRAM_ID,
       payer: owner,
@@ -152,5 +163,39 @@ export class FragmentorClient {
       chunks.push(array.slice(i, i + chunkSize));
     }
     return chunks;
+  }
+
+  static buildInitClaimIx(
+    owner: PublicKey,
+    vault: PublicKey,
+    mintToClaim: PublicKey,
+    mintDestAcc: PublicKey
+  ) {
+    const [wholeNftThronePDA, wholeNftThronePDABump] = getWholeNftThronePda(
+      mintToClaim,
+      vault
+    );
+    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(vault);
+    const [wholeNftPDA, wholeNftPDABump] = getWholeNftPda(mintToClaim, vault);
+
+    const claimIxAccs: ClaimInstructionAccounts = {
+      tokenProgram: TOKEN_PROGRAM_ID,
+      payer: owner,
+      systemProgram: SystemProgram.programId,
+      rent: SYSVAR_RENT_PUBKEY,
+      wholeNftThrone: wholeNftThronePDA,
+      authority: vaultAuthPDA,
+      vault: vault,
+      wholeNft: wholeNftPDA,
+      mint: mintToClaim,
+      mintDestAcc,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    };
+
+    return createClaimInstruction(claimIxAccs, {
+      bumpAuth: vaultAuthPDABump,
+      bumpWholeNft: wholeNftPDABump,
+      bumpWholeNftThrone: wholeNftThronePDABump,
+    });
   }
 }
