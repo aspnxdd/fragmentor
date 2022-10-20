@@ -1,11 +1,12 @@
 import { PublicKey } from "@solana/web3.js";
 import { program } from "../tests/utils";
 
+const PROGRAM = new PublicKey("CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed")
 type PDA = [PublicKey, number];
 export function getWholeNftPda(mintKey: PublicKey, vault: PublicKey): PDA {
   const [wholeNftPDA, wholeNftPDABump] = PublicKey.findProgramAddressSync(
     [Buffer.from("whole_nft"), mintKey.toBytes(), vault.toBytes()],
-    program?.programId
+    PROGRAM
   );
 
   return [wholeNftPDA, wholeNftPDABump];
@@ -16,7 +17,7 @@ export function getWholeNftPda(mintKey: PublicKey, vault: PublicKey): PDA {
 export function getVaultAuthPda(vault: PublicKey): PDA {
   const [vaultAuthPDA, vaultAuthPDABump] = PublicKey.findProgramAddressSync(
     [Buffer.from(vault.toBytes())],
-    program.programId
+    PROGRAM
   );
 
   return [vaultAuthPDA, vaultAuthPDABump];
@@ -30,7 +31,7 @@ export function getWholeNftThronePda(
   const [wholeNftThronePDA, wholeNftThronePDABump] =
     PublicKey.findProgramAddressSync(
       [Buffer.from("whole_nft_throne"), mintKey.toBytes(), vault.toBytes()],
-      program.programId
+      PROGRAM
     );
   return [wholeNftThronePDA, wholeNftThronePDABump];
 }

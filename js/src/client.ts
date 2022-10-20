@@ -9,7 +9,6 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   AccountMeta,
-  TransactionInstruction,
 } from "@solana/web3.js";
 import BN from "bn.js";
 import { getVaultAuthPda, getWholeNftPda, getWholeNftThronePda } from "./pda";
@@ -53,10 +52,9 @@ export class FragmentorClient {
     return createInitVaultInstruction(initVaultIxAccs);
   }
 
-  async fetchVaultsByOwner(owner: PublicKey, vault: PublicKey) {
+  async fetchVaultsByOwner(owner: PublicKey) {
     return await Vault.gpaBuilder()
       .addFilter("owner", owner)
-      .addFilter("authoritySeed", vault)
       .run(this.connection);
   }
 
@@ -103,6 +101,12 @@ export class FragmentorClient {
   async fetchWholeNftByOriginalMint(mint: PublicKey) {
     return await WholeNft.gpaBuilder()
       .addFilter("originalMint", mint)
+      .run(this.connection);
+  }
+
+  async fetchWholeNftsByVault(vault: PublicKey) {
+    return await WholeNft.gpaBuilder()
+      .addFilter("vault", vault)
       .run(this.connection);
   }
 

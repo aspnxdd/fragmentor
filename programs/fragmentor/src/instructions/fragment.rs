@@ -76,7 +76,7 @@ pub fn handler(
     ctx.accounts.whole_nft.original_mint = original_nft;
     ctx.accounts.whole_nft.parts = fragmented_nfts.len() as u8;
     ctx.accounts.whole_nft.fragments = fragmented_nfts;
-
+    ctx.accounts.whole_nft.vault = ctx.accounts.vault.key();
     let vault = &*ctx.accounts.vault;
     token::transfer(
         ctx.accounts

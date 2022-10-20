@@ -125,10 +125,7 @@ describe("fragmentor", async () => {
     await program?.provider?.sendAndConfirm?.(tx1, [vault]);
     console.log("vault created");
 
-    const vaults = await fragmentorClient.fetchVaultsByOwner(
-      wallet.publicKey,
-      vault.publicKey
-    );
+    const vaults = await fragmentorClient.fetchVaultsByOwner(wallet.publicKey);
 
     expect(vaults.length).to.equal(1);
 
@@ -255,10 +252,7 @@ describe("fragmentor", async () => {
 
     expect(tokenAmount).to.equal("1");
 
-    const vaults = await fragmentorClient.fetchVaultsByOwner(
-      wallet.publicKey,
-      vault.publicKey
-    );
+    const vaults = await fragmentorClient.fetchVaultsByOwner(wallet.publicKey);
 
     expect(vaults.length).to.equal(1);
 
