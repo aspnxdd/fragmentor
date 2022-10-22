@@ -85,9 +85,9 @@ pub fn handler(ctx: Context<Claim>) -> Result<()> {
     let whole_nft = &mut *ctx.accounts.whole_nft;
     let vault = &*ctx.accounts.vault;
 
-    // if whole_nft.parts > 0 {
-    //     return Err(error!(ErrorCode::NotAllFragmentsDestroyed));
-    // }
+    if whole_nft.fragments.iter().any(|f| !f.is_burned) {
+        return Err(error!(ErrorCode::NotAllFragmentsDestroyed));
+    }
     token::transfer(
         ctx.accounts
             .transfer_ctx()

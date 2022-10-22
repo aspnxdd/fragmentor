@@ -75,16 +75,16 @@ pub fn handler(
 ) -> Result<()> {
     ctx.accounts.whole_nft.original_mint = original_nft;
 
-    let mut fs = vec![];
-    for nft in fragmented_nfts {
-        fs.push(FragmentData {
-            mint: nft,
+    let fragments = fragmented_nfts
+        .clone()
+        .iter()
+        .map(|fragment| FragmentData {
+            mint: *fragment,
             is_burned: false,
-        });
-    }
-    ctx.accounts.whole_nft.fragments = fs;
-    // ctx.accounts.whole_nft.parts = fragmented_nfts.len() as u8;
-    // ctx.accounts.whole_nft.fragments = fragmented_nfts;
+        })
+        .collect();
+
+    ctx.accounts.whole_nft.fragments = fragments;
     ctx.accounts.whole_nft.vault = ctx.accounts.vault.key();
     let vault = &*ctx.accounts.vault;
     token::transfer(

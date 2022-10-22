@@ -127,28 +127,17 @@ describe("fragmentor", async () => {
 
     const vaults = await fragmentorClient.fetchVaultsByOwner(wallet.publicKey);
 
-    expect(vaults.length).to.equal(1);
+    expect(vaults.length).to.greaterThan(0);
 
     const acc = vaults[0];
 
     const [vaultData] = FragmentorClient.deserializeVault(acc.account);
     const owner = vaultData.owner.toBase58();
     expect(owner).to.equal(wallet.publicKey.toBase58());
-    const authority = vaultData.authority.toBase58();
-    expect(authority).to.equal(vaultAuthPDA.toBase58());
-    const authoritySeed = vaultData.authoritySeed.toBase58();
-    expect(authoritySeed).to.equal(vault.publicKey.toBase58());
-    const boxes = vaultData.boxes;
-    expect(boxes).to.equal(0);
   });
 
   it("Init Fragment", async () => {
-    console.log(1, fragment1.publicKey.toBase58());
-    console.log(2, fragment2.publicKey.toBase58());
-    console.log(3, fragment3.publicKey.toBase58());
-    console.log(4, fragment4.publicKey.toBase58());
-    console.log(5, fragment5.publicKey.toBase58());
-    console.log(6, fragment6.publicKey.toBase58());
+   
     const ix = FragmentorClient.buildInitFragmentIx(
       secondWallet.publicKey,
       vault.publicKey,
@@ -174,18 +163,12 @@ describe("fragmentor", async () => {
     for (const acc of wholeNfts) {
       const [wholeNft] = FragmentorClient.deserializeWholeNft(acc.account);
 
-      const _fragment1 = wholeNft.fragments[0].toBase58();
-      const _fragment2 = wholeNft.fragments[1].toBase58();
-      const _fragment3 = wholeNft.fragments[2].toBase58();
-      const _fragment4 = wholeNft.fragments[3].toBase58();
-      const _fragment5 = wholeNft.fragments[4].toBase58();
-      const _fragment6 = wholeNft.fragments[5].toBase58();
-      console.log(11, _fragment1);
-      console.log(12, _fragment2);
-      console.log(13, _fragment3);
-      console.log(14, _fragment4);
-      console.log(15, _fragment5);
-      console.log(16, _fragment6);
+      const _fragment1 = wholeNft.fragments[0].mint.toBase58();
+      const _fragment2 = wholeNft.fragments[1].mint.toBase58();
+      const _fragment3 = wholeNft.fragments[2].mint.toBase58();
+      const _fragment4 = wholeNft.fragments[3].mint.toBase58();
+      const _fragment5 = wholeNft.fragments[4].mint.toBase58();
+      const _fragment6 = wholeNft.fragments[5].mint.toBase58();
       expect(fragment1.publicKey.toBase58()).to.equal(_fragment1);
       expect(fragment2.publicKey.toBase58()).to.equal(_fragment2);
       expect(fragment3.publicKey.toBase58()).to.equal(_fragment3);
@@ -194,7 +177,7 @@ describe("fragmentor", async () => {
       expect(fragment6.publicKey.toBase58()).to.equal(_fragment6);
       const originalMint = wholeNft.originalMint.toBase58();
       expect(originalMint).to.equal(mintKey.publicKey.toBase58());
-      const parts = wholeNft.parts;
+      const parts = wholeNft.fragments.length;
       expect(parts).to.equal(6);
     }
   });
@@ -227,9 +210,10 @@ describe("fragmentor", async () => {
     for (const acc of wholeNfts) {
       const [wholeNft] = FragmentorClient.deserializeWholeNft(acc.account);
 
+      const burnedNfts = wholeNft.fragments.filter((f) => f.isBurned);
+
       console.log("wholeNft", wholeNft.pretty());
-      assert.equal(wholeNft.fragments.length, 0);
-      assert.equal(wholeNft.parts, 0);
+      assert.equal(burnedNfts.length, 6);
       assert.equal(
         wholeNft.originalMint.toBase58(),
         mintKey.publicKey.toBase58()
@@ -237,8 +221,6 @@ describe("fragmentor", async () => {
     }
   });
   it("claim nft", async () => {
-    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(vault.publicKey);
-
     const mintDestAta = await getAssociatedTokenAddress(
       mintKey.publicKey,
       secondWallet.publicKey
@@ -266,18 +248,12 @@ describe("fragmentor", async () => {
 
     const vaults = await fragmentorClient.fetchVaultsByOwner(wallet.publicKey);
 
-    expect(vaults.length).to.equal(1);
+    expect(vaults.length).to.greaterThan(0);
 
     const acc = vaults[0];
 
     const [vaultData] = FragmentorClient.deserializeVault(acc.account);
     const owner = vaultData.owner.toBase58();
     expect(owner).to.equal(wallet.publicKey.toBase58());
-    const authority = vaultData.authority.toBase58();
-    expect(authority).to.equal(vaultAuthPDA.toBase58());
-    const authoritySeed = vaultData.authoritySeed.toBase58();
-    expect(authoritySeed).to.equal(vault.publicKey.toBase58());
-    const boxes = vaultData.boxes;
-    expect(boxes).to.equal(0);
   });
 });

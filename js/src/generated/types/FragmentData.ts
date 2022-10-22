@@ -6,21 +6,21 @@
  */
 
 import * as web3 from '@solana/web3.js'
-import * as beet from '@metaplex-foundation/beet'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
-export type A = {
-  a: number
-  b: web3.PublicKey
+import * as beet from '@metaplex-foundation/beet'
+export type FragmentData = {
+  mint: web3.PublicKey
+  isBurned: boolean
 }
 
 /**
  * @category userTypes
  * @category generated
  */
-export const aBeet = new beet.BeetArgsStruct<A>(
+export const fragmentDataBeet = new beet.BeetArgsStruct<FragmentData>(
   [
-    ['a', beet.u8],
-    ['b', beetSolana.publicKey],
+    ['mint', beetSolana.publicKey],
+    ['isBurned', beet.bool],
   ],
-  'A'
+  'FragmentData'
 )

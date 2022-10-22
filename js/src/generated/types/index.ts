@@ -1,1 +1,1 @@
-export * from './A'
+export * from './FragmentData'
