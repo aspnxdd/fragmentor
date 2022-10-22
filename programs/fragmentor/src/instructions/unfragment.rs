@@ -128,10 +128,10 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         token::burn(cpi_ctx, 1)?;
 
         // remove fragmented nft from whole_nft fragments vec
-        whole_nft
-            .fragments
-            .retain(|fragment| fragment != fragmented_nft);
-        whole_nft.parts -= 1;
+        // whole_nft
+        //     .fragments
+        //     .retain(|fragment| fragment != fragmented_nft);
+        // whole_nft.parts -= 1;
     }
 
     Ok(())

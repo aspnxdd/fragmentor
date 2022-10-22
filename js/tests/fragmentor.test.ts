@@ -143,6 +143,12 @@ describe("fragmentor", async () => {
   });
 
   it("Init Fragment", async () => {
+    console.log(1, fragment1.publicKey.toBase58());
+    console.log(2, fragment2.publicKey.toBase58());
+    console.log(3, fragment3.publicKey.toBase58());
+    console.log(4, fragment4.publicKey.toBase58());
+    console.log(5, fragment5.publicKey.toBase58());
+    console.log(6, fragment6.publicKey.toBase58());
     const ix = FragmentorClient.buildInitFragmentIx(
       secondWallet.publicKey,
       vault.publicKey,
@@ -174,6 +180,12 @@ describe("fragmentor", async () => {
       const _fragment4 = wholeNft.fragments[3].toBase58();
       const _fragment5 = wholeNft.fragments[4].toBase58();
       const _fragment6 = wholeNft.fragments[5].toBase58();
+      console.log(11, _fragment1);
+      console.log(12, _fragment2);
+      console.log(13, _fragment3);
+      console.log(14, _fragment4);
+      console.log(15, _fragment5);
+      console.log(16, _fragment6);
       expect(fragment1.publicKey.toBase58()).to.equal(_fragment1);
       expect(fragment2.publicKey.toBase58()).to.equal(_fragment2);
       expect(fragment3.publicKey.toBase58()).to.equal(_fragment3);
