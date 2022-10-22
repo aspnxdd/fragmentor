@@ -129,9 +129,13 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
 
         // remove fragmented nft from whole_nft fragments vec
         // whole_nft
-        //     .fragments
-        //     .retain(|fragment| fragment != fragmented_nft);
-        // whole_nft.parts -= 1;
+        //     .fragments.iter().map(|mut fragment| {
+        //         if fragment.mint == nft.key() {
+        //             fragment.is_burned = true;
+        //         }
+        //         Some(fragment)
+        //     });
+        // // whole_nft.parts -= 1;
     }
 
     Ok(())

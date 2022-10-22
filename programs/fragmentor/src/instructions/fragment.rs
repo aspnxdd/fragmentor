@@ -74,10 +74,15 @@ pub fn handler(
     fragmented_nfts: Vec<Pubkey>,
 ) -> Result<()> {
     ctx.accounts.whole_nft.original_mint = original_nft;
-    ctx.accounts.whole_nft.fragments = vec![FragmentData {
-        is_burned: false,
-        mint: fragmented_nfts[0],
-    }];
+
+    let mut fs = vec![];
+    for nft in fragmented_nfts {
+        fs.push(FragmentData {
+            mint: nft,
+            is_burned: false,
+        });
+    }
+    ctx.accounts.whole_nft.fragments = fs;
     // ctx.accounts.whole_nft.parts = fragmented_nfts.len() as u8;
     // ctx.accounts.whole_nft.fragments = fragmented_nfts;
     ctx.accounts.whole_nft.vault = ctx.accounts.vault.key();
