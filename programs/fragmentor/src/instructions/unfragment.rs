@@ -124,14 +124,19 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
         token::burn(cpi_ctx, 1)?;
 
-        let mut whole_nft = &mut *ctx.accounts.whole_nft;
+        let whole_nft = &mut *ctx.accounts.whole_nft;
 
-        whole_nft.fragments = whole_nft.fragments.iter_mut().map(| fragment| {
-            if fragment.mint == nft.key() {
-                fragment.is_burned = true
+        let fragment_index = whole_nft
+            .fragments
+            .iter()
+            .position(|fragment| fragment.mint == nft.key());
+            
+        match fragment_index {
+            Some(i) => whole_nft.fragments[i].is_burned = true,
+            None => {
+                return Err(error!(ErrorCode::NftsMismatch));
             }
-            fragment.to_owned()
-        }).collect::<Vec<_>>();
+        }
     }
 
     Ok(())
