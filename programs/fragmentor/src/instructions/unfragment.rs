@@ -36,7 +36,6 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     ctx: Context<'key, 'accounts, 'remaining, 'info, Unfragment<'info>>,
     fragmented_nfts: Vec<Pubkey>,
 ) -> Result<()> {
-    let whole_nft = &mut *ctx.accounts.whole_nft;
     let owner = ctx.accounts.payer.key();
 
     // the remaining accs must be passed in the following order:
@@ -101,9 +100,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         let nft = fragmented_nft.clone();
         let ata = get_associated_token_address(&owner.key(), &fragmented_nft.key());
 
-        let mint_acc = mint_accs
-            .iter()
-            .find(|&&mint| &mint.key() == &nft.key());
+        let mint_acc = mint_accs.iter().find(|&&mint| &mint.key() == &nft.key());
 
         if mint_acc.is_none() {
             return Err(error!(ErrorCode::MintAccsMismatch));
@@ -112,7 +109,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         let ata_acc = ata_accs
             .iter()
             .find(|&&ata_acc_info| ata_acc_info.key() == ata);
-            
+
         if ata_acc.is_none() {
             return Err(error!(ErrorCode::AtaAccsMismatch));
         }
@@ -127,11 +124,14 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
         token::burn(cpi_ctx, 1)?;
 
-        // remove fragmented nft from whole_nft fragments vec
-        whole_nft
-            .fragments
-            .retain(|fragment| fragment != fragmented_nft);
-        whole_nft.parts -= 1;
+        let mut whole_nft = &mut *ctx.accounts.whole_nft;
+
+        whole_nft.fragments = whole_nft.fragments.iter_mut().map(| fragment| {
+            if fragment.mint == nft.key() {
+                fragment.is_burned = true
+            }
+            fragment.to_owned()
+        }).collect::<Vec<_>>();
     }
 
     Ok(())

@@ -8,6 +8,7 @@
 import * as web3 from '@solana/web3.js'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
 import * as beet from '@metaplex-foundation/beet'
+import { FragmentData, fragmentDataBeet } from '../types/FragmentData'
 
 /**
  * Arguments used to create {@link WholeNft}
@@ -17,8 +18,7 @@ import * as beet from '@metaplex-foundation/beet'
 export type WholeNftArgs = {
   vault: web3.PublicKey
   originalMint: web3.PublicKey
-  parts: number
-  fragments: web3.PublicKey[]
+  fragments: FragmentData[]
 }
 
 export const wholeNftDiscriminator = [164, 165, 36, 244, 176, 206, 237, 20]
@@ -33,20 +33,14 @@ export class WholeNft implements WholeNftArgs {
   private constructor(
     readonly vault: web3.PublicKey,
     readonly originalMint: web3.PublicKey,
-    readonly parts: number,
-    readonly fragments: web3.PublicKey[]
+    readonly fragments: FragmentData[]
   ) {}
 
   /**
    * Creates a {@link WholeNft} instance from the provided args.
    */
   static fromArgs(args: WholeNftArgs) {
-    return new WholeNft(
-      args.vault,
-      args.originalMint,
-      args.parts,
-      args.fragments
-    )
+    return new WholeNft(args.vault, args.originalMint, args.fragments)
   }
 
   /**
@@ -156,7 +150,6 @@ export class WholeNft implements WholeNftArgs {
     return {
       vault: this.vault.toBase58(),
       originalMint: this.originalMint.toBase58(),
-      parts: this.parts,
       fragments: this.fragments,
     }
   }
@@ -176,8 +169,7 @@ export const wholeNftBeet = new beet.FixableBeetStruct<
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['vault', beetSolana.publicKey],
     ['originalMint', beetSolana.publicKey],
-    ['parts', beet.u8],
-    ['fragments', beet.array(beetSolana.publicKey)],
+    ['fragments', beet.array(fragmentDataBeet)],
   ],
   WholeNft.fromArgs,
   'WholeNft'
