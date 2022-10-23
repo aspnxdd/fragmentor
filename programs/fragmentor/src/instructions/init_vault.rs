@@ -1,14 +1,13 @@
 use anchor_lang::prelude::*;
 
-use crate::state::*;
+use crate::{constants::ANCHOR_DISC, state::*};
 
 #[derive(Accounts)]
 pub struct InitVault<'info> {
     // vault
-    #[account(init, payer = payer, space = 8 + std::mem::size_of::<Vault>())]
+    #[account(init, payer = payer, space = ANCHOR_DISC + std::mem::size_of::<Vault>())]
     pub vault: Box<Account<'info, Vault>>,
     pub creator: Signer<'info>,
-    
 
     #[account(mut)]
     pub payer: Signer<'info>,
