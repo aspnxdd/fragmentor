@@ -156,13 +156,14 @@ const Home: NextPage = () => {
       <button onClick={mintNft}>mint nft</button>
       {nfts.map((e) => {
         return (
-          <div key={e.mint.address.toBase58()}>
+          <figure key={e.mint.address.toBase58()}>
             <img src={e.json?.image} />
-            <span>{e.name}</span>
+            <figcaption>{e.name}</figcaption>
+            <figcaption>{e.mint.address.toBase58()}</figcaption>
             <button onClick={() => createFragments(e.mint.address)}>
-              create fragments
+              Fragment NFT
             </button>
-          </div>
+          </figure>
         );
       })}
 

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import type { AppProps } from "next/app";
+import "../styles/globals.css";
 import {
   ConnectionProvider,
   WalletProvider,
@@ -11,6 +12,7 @@ import {
   WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
 import { clusterApiUrl } from "@solana/web3.js";
+import Wallet from "../components/Wallet";
 
 // Default styles that can be overridden by your app
 require("@solana/wallet-adapter-react-ui/styles.css");
@@ -27,7 +29,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets}>
         <WalletModalProvider>
-          <WalletMultiButton />
+          <Wallet/>
           <Component {...pageProps} />
         </WalletModalProvider>
       </WalletProvider>
