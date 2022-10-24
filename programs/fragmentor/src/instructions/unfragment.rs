@@ -168,10 +168,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         let accs = vec![
             ctx.accounts.token_metadata_program.to_account_info(),
             ctx.accounts.payer.to_account_info(),
-            ctx.accounts.authority.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
-            ctx.accounts.system_program.to_account_info(),
-            ctx.accounts.rent.to_account_info(),
             metadata_acc.unwrap().to_account_info(),
             edition_acc.unwrap().to_account_info(),
             mint_acc.unwrap().to_account_info(),
@@ -188,7 +185,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
                 ctx.accounts.token_program.key(),
                 None,
             ),
-            accs.as_slice(),
+            &accs[..],
         )?;
 
         let whole_nft = &mut *ctx.accounts.whole_nft;
