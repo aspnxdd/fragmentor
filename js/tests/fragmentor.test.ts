@@ -199,9 +199,11 @@ describe("fragmentor", async () => {
     );
 
     // max can jam 7 fragments into a single transaction
-    const tx1 = new Transaction().add(ix1, ix2);
+    const tx1 = new Transaction().add(ix1);
+    const tx2 = new Transaction().add(ix2);
 
     await program?.provider?.sendAndConfirm?.(tx1, [secondWallet]);
+    await program?.provider?.sendAndConfirm?.(tx2, [secondWallet]);
 
     const wholeNfts = await fragmentorClient.fetchWholeNftByOriginalMint(
       mintKey.publicKey

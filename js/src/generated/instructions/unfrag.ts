@@ -44,6 +44,7 @@ export const unfragStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] wholeNftThrone
  * @property [_writable_, **signer**] payer
  * @property [] authority
+ * @property [] tokenMetadataProgram
  * @category Instructions
  * @category Unfrag
  * @category generated
@@ -55,6 +56,7 @@ export type UnfragInstructionAccounts = {
   payer: web3.PublicKey
   authority: web3.PublicKey
   tokenProgram?: web3.PublicKey
+  tokenMetadataProgram: web3.PublicKey
   systemProgram?: web3.PublicKey
   rent?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
@@ -111,6 +113,11 @@ export function createUnfragInstruction(
     },
     {
       pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.tokenMetadataProgram,
       isWritable: false,
       isSigner: false,
     },

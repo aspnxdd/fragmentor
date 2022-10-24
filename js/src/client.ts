@@ -161,6 +161,24 @@ export class FragmentorClient {
       });
     }
 
+    for (const fragment of fragmentsMints) {
+      const metadataAddress = getMetadata(fragment);
+      remainingAccounts.push({
+        pubkey: metadataAddress,
+        isWritable: true,
+        isSigner: false,
+      });
+    }
+
+    for (const fragment of fragmentsMints) {
+      const masterEdition = getMasterEdition(fragment);
+      remainingAccounts.push({
+        pubkey: masterEdition,
+        isWritable: true,
+        isSigner: false,
+      });
+    }
+
     const unfragAccs: UnfragInstructionAccounts = {
       tokenProgram: TOKEN_PROGRAM_ID,
       payer: owner,
@@ -170,6 +188,7 @@ export class FragmentorClient {
       authority: vaultAuthPDA,
       vault: vault,
       wholeNft: wholeNftPDA,
+      tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
       anchorRemainingAccounts: remainingAccounts,
     };
 

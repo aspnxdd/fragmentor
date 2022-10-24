@@ -1,11 +1,14 @@
 use crate::errors::ErrorCode;
 use crate::state::*;
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program::program::invoke};
 use anchor_spl::{
     associated_token::get_associated_token_address,
-    token::{self, Burn, Token, TokenAccount},
+    token::{Token, TokenAccount},
 };
-
+use mpl_token_metadata::{
+    instruction::burn_nft,
+    pda::{find_master_edition_account, find_metadata_account},
+};
 #[derive(Accounts)]
 #[instruction(bump_auth: u8)]
 pub struct Unfragment<'info> {
@@ -27,6 +30,9 @@ pub struct Unfragment<'info> {
 
     pub token_program: Program<'info, Token>,
 
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub token_metadata_program: UncheckedAccount<'info>,
+
     pub system_program: Program<'info, System>,
 
     pub rent: Sysvar<'info, Rent>,
@@ -46,10 +52,12 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
 
     let mut mint_accs = vec![];
     let mut ata_accs = vec![];
+    let mut metadata_accs = vec![];
+    let mut edition_accs = vec![];
 
     msg!("remaining_accs_len: {}", remaining_accs_len);
     // map all the mint accs
-    for _ in 0..(remaining_accs_len / 2) {
+    for _ in 0..(remaining_accs_len / 4) {
         let acc = next_account_info(remaining_accs);
         match acc {
             Ok(acc) => {
@@ -62,7 +70,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     }
 
     // map all the ata accs
-    for _ in 0..(remaining_accs_len / 2) {
+    for _ in 0..(remaining_accs_len / 4) {
         let acc = next_account_info(remaining_accs);
         match acc {
             Ok(acc) => {
@@ -73,6 +81,33 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
             }
         }
     }
+
+    // map all the metadata accs
+    for _ in 0..(remaining_accs_len / 4) {
+        let acc = next_account_info(remaining_accs);
+        match acc {
+            Ok(acc) => {
+                metadata_accs.push(acc);
+            }
+            Err(_) => {
+                return Err(error!(ErrorCode::NftsMismatch));
+            }
+        }
+    }
+
+    // map all the edition accs
+    for _ in 0..(remaining_accs_len / 4) {
+        let acc = next_account_info(remaining_accs);
+        match acc {
+            Ok(acc) => {
+                edition_accs.push(acc);
+            }
+            Err(_) => {
+                return Err(error!(ErrorCode::NftsMismatch));
+            }
+        }
+    }
+
     msg!("mint_accs: {}", mint_accs.len());
     msg!("ata_accs_len: {}", ata_accs.len());
     msg!("fragmented_nfts: {}", fragmented_nfts.len());
@@ -99,6 +134,8 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     for fragmented_nft in &fragmented_nfts {
         let nft = fragmented_nft.clone();
         let ata = get_associated_token_address(&owner.key(), &fragmented_nft.key());
+        let (metadata, _) = find_metadata_account(&fragmented_nft.key());
+        let (edition, _) = find_master_edition_account(&fragmented_nft.key());
 
         let mint_acc = mint_accs.iter().find(|&&mint| &mint.key() == &nft.key());
 
@@ -110,19 +147,46 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
             .iter()
             .find(|&&ata_acc_info| ata_acc_info.key() == ata);
 
+        let metadata_acc = metadata_accs
+            .iter()
+            .find(|&&metadata_acc_info| metadata_acc_info.key() == metadata);
+
+        let edition_acc = edition_accs
+            .iter()
+            .find(|&&edition_acc_info| edition_acc_info.key() == edition);
+
         if ata_acc.is_none() {
             return Err(error!(ErrorCode::AtaAccsMismatch));
         }
+        if metadata_acc.is_none() {
+            return Err(error!(ErrorCode::AtaAccsMismatch));
+        }
+        if edition_acc.is_none() {
+            return Err(error!(ErrorCode::AtaAccsMismatch));
+        }
 
-        let cpi_accounts = Burn {
-            authority: ctx.accounts.payer.to_account_info(),
-            from: ata_acc.unwrap().to_account_info(),
-            mint: mint_acc.unwrap().to_account_info(),
-        };
-
-        let cpi_program = ctx.accounts.token_program.to_account_info();
-        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
-        token::burn(cpi_ctx, 1)?;
+        let accs = vec![
+            ctx.accounts.token_metadata_program.to_account_info(),
+            ctx.accounts.payer.to_account_info(),
+            ctx.accounts.token_program.to_account_info(),
+            metadata_acc.unwrap().to_account_info(),
+            edition_acc.unwrap().to_account_info(),
+            mint_acc.unwrap().to_account_info(),
+            ata_acc.unwrap().to_account_info(),
+        ];
+        invoke(
+            &burn_nft(
+                ctx.accounts.token_metadata_program.key(),
+                metadata,
+                owner,
+                nft,
+                ata,
+                edition,
+                ctx.accounts.token_program.key(),
+                None,
+            ),
+            &accs[..],
+        )?;
 
         let whole_nft = &mut *ctx.accounts.whole_nft;
 
@@ -130,7 +194,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
             .fragments
             .iter()
             .position(|fragment| fragment.mint == nft.key());
-            
+
         match fragment_index {
             Some(i) => whole_nft.fragments[i].is_burned = true,
             None => {
