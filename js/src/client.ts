@@ -1,5 +1,9 @@
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccountInstruction,
+  createInitializeMintInstruction,
+  getAssociatedTokenAddress,
+  MINT_SIZE,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import {
@@ -9,9 +13,19 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   AccountMeta,
+  Keypair,
+  TransactionInstruction,
+  Transaction,
 } from "@solana/web3.js";
 import BN from "bn.js";
-import { getVaultAuthPda, getWholeNftPda, getWholeNftThronePda } from "./pda";
+import {
+  getMasterEdition,
+  getMetadata,
+  getVaultAuthPda,
+  getWholeNftPda,
+  getWholeNftThronePda,
+  TOKEN_METADATA_PROGRAM_ID,
+} from "./pda";
 import { Vault, VaultArgs } from "./generated/accounts/Vault";
 import { WholeNft } from "./generated/accounts/WholeNft";
 import {
@@ -30,6 +44,10 @@ import {
   createUnfragInstruction,
   UnfragInstructionAccounts,
 } from "./generated/instructions/unfrag";
+import {
+  MintNftInstructionAccounts,
+  createMintNftInstruction,
+} from "./generated";
 
 type Replace<T, U extends PropertyKey, V> = Omit<T, U> & {
   [K in U]: V;
@@ -42,11 +60,11 @@ export class FragmentorClient {
     this.connection = connection;
   }
 
-  static buildInitVaultIx(owner: PublicKey, vault: PublicKey) {
+  static buildInitVaultIx(owner: PublicKey, vault?: PublicKey) {
     const initVaultIxAccs: InitVaultInstructionAccounts = {
       creator: owner,
       payer: owner,
-      vault: vault,
+      vault: vault ?? Keypair.generate().publicKey,
       systemProgram: SystemProgram.programId,
     };
     return createInitVaultInstruction(initVaultIxAccs);
@@ -202,4 +220,49 @@ export class FragmentorClient {
       bumpWholeNftThrone: wholeNftThronePDABump,
     });
   }
+}
+
+export async function buildMintNftIxs(
+  connection: Connection,
+  owner: PublicKey,
+  mintKey: PublicKey
+): Promise<TransactionInstruction[]> {
+  const lamports = await connection.getMinimumBalanceForRentExemption(
+    MINT_SIZE
+  );
+
+  const ata = await getAssociatedTokenAddress(mintKey, owner);
+
+  const ixs = [
+    SystemProgram.createAccount({
+      fromPubkey: owner,
+      newAccountPubkey: mintKey,
+      space: MINT_SIZE,
+      programId: TOKEN_PROGRAM_ID,
+      lamports,
+    }),
+    createInitializeMintInstruction(mintKey, 0, owner, owner),
+    createAssociatedTokenAccountInstruction(owner, ata, owner, mintKey),
+  ];
+
+  const metadataAddress = await getMetadata(mintKey);
+  const masterEdition = await getMasterEdition(mintKey);
+
+  const accounts: MintNftInstructionAccounts = {
+    mintAuthority: owner,
+    mint: mintKey,
+    tokenAccount: ata,
+    tokenProgram: TOKEN_PROGRAM_ID,
+    metadata: metadataAddress,
+    tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+    payer: owner,
+    systemProgram: SystemProgram.programId,
+    masterEdition,
+  };
+
+  const ix = createMintNftInstruction(accounts, {
+    mintKey: mintKey,
+  });
+  ixs.push(ix);
+  return ixs;
 }

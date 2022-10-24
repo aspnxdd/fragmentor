@@ -2,14 +2,20 @@ import type { NextPage } from "next";
 import { useEffect, useMemo, useState } from "react";
 import styles from "../styles/Home.module.css";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { FragmentorClient } from "../../js/dist/js/src/index";
-import { PublicKey } from "@solana/web3.js";
-
+import { FragmentorClient, buildMintNftIxs } from "../../js/dist/js/src/index";
+import { Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import { MetaplexClient } from "../lib/metaplex";
+import { Nft } from "@metaplex-foundation/js";
+import {
+  getAssociatedTokenAddress,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token";
 const Home: NextPage = () => {
   const { connection } = useConnection();
-  const { publicKey } = useWallet();
+  const { publicKey, sendTransaction, signTransaction } = useWallet();
   const [vaults, setVaults] = useState<string[]>([]);
   const [selectedVault, setSelectedVault] = useState<string>("");
+  const [nfts, setNfts] = useState<Nft[]>([]);
   const [fragments, setFragments] = useState<
     { originalNft: string; fragments: string[] }[]
   >([]);
@@ -19,17 +25,110 @@ const Home: NextPage = () => {
     [connection]
   );
 
+  const metaplexClient = useMemo(
+    () => new MetaplexClient(connection),
+    [connection]
+  );
+
+  async function createVault() {
+    if (!publicKey || !connection) return;
+    const { blockhash, lastValidBlockHeight } =
+      await connection.getLatestBlockhash();
+    const vaultKp = Keypair.generate();
+    const ix = FragmentorClient.buildInitVaultIx(publicKey, vaultKp.publicKey);
+
+    const tx = new Transaction({
+      feePayer: publicKey,
+      blockhash,
+      lastValidBlockHeight,
+    }).add(ix);
+    tx.sign(...[vaultKp]);
+    const sig = await sendTransaction(tx, connection);
+
+    await connection.confirmTransaction({
+      signature: sig,
+      blockhash,
+      lastValidBlockHeight,
+    });
+  }
+
+  useEffect(() => {
+    if (!publicKey || !metaplexClient) return;
+    metaplexClient.getNFTsByOwner(publicKey).then((e) => e && setNfts(e));
+  }, [connection, metaplexClient, publicKey]);
+
+  async function mintNft() {
+    if (!publicKey || !connection) return;
+    const { blockhash, lastValidBlockHeight } =
+      await connection.getLatestBlockhash();
+    const nftKp = Keypair.generate();
+    const nftKp2 = Keypair.generate();
+    const ixs = await buildMintNftIxs(connection, publicKey, nftKp.publicKey);
+    const ixs2 = await buildMintNftIxs(connection, publicKey, nftKp2.publicKey);
+
+    const tx = new Transaction({
+      feePayer: publicKey,
+      blockhash,
+      lastValidBlockHeight,
+    }).add(...ixs, ...ixs2);
+    tx.sign(...[nftKp, nftKp2]);
+    const sig = await sendTransaction(tx, connection);
+
+    await connection.confirmTransaction({
+      signature: sig,
+      blockhash,
+      lastValidBlockHeight,
+    });
+
+    return nftKp.publicKey;
+  }
+
+  async function createFragments(mintToFragment: PublicKey) {
+    if (!publicKey || !connection || !signTransaction) return;
+    const { blockhash, lastValidBlockHeight } =
+      await connection.getLatestBlockhash();
+    const ata = getAssociatedTokenAddressSync(mintToFragment, publicKey);
+    const fragments: PublicKey[] = [];
+    for (let i = 0; i < 2; i++) {
+      const fragmentPubkey = await mintNft();
+      if (fragmentPubkey) fragments.push(fragmentPubkey);
+    }
+
+    const ix = FragmentorClient.buildInitFragmentIx(
+      publicKey,
+      new PublicKey(vaults[0]),
+      mintToFragment,
+      ata,
+      fragments
+    );
+
+    const tx = new Transaction({
+      feePayer: publicKey,
+      blockhash,
+      lastValidBlockHeight,
+    }).add(ix);
+    // const t = await signTransaction(tx);
+    const sig = await sendTransaction(tx, connection);
+
+    await connection.confirmTransaction({
+      signature: sig,
+      blockhash,
+      lastValidBlockHeight,
+    });
+  }
+
   useEffect(() => {
     setVaults([]);
     setFragments([]);
 
     (async () => {
+      if (!publicKey || !connection) return;
       const ownerVaults = await fragmentorClient.fetchVaultsByOwner(
-        new PublicKey("HoW3qWigARorwqGMLU9xRppdwMHVNwvdrAFbUV7TDeDL")
+        new PublicKey(publicKey?.toBase58()!)
       );
       setVaults(ownerVaults.map((e) => e.pubkey.toBase58()));
     })();
-  }, [connection, fragmentorClient]);
+  }, [connection, fragmentorClient, publicKey]);
 
   useEffect(() => {
     if (!selectedVault) return;
@@ -53,6 +152,20 @@ const Home: NextPage = () => {
   return (
     <div className={styles.container}>
       <h1>your vaults:</h1>
+      <button onClick={createVault}>Create vault</button>
+      <button onClick={mintNft}>mint nft</button>
+      {nfts.map((e) => {
+        return (
+          <div key={e.mint.address.toBase58()}>
+            <img src={e.json?.image} />
+            <span>{e.name}</span>
+            <button onClick={() => createFragments(e.mint.address)}>
+              create fragments
+            </button>
+          </div>
+        );
+      })}
+
       {vaults.map((vault) => {
         return (
           <div key={vault} onClick={() => setSelectedVault(vault)}>
