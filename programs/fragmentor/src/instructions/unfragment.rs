@@ -3,7 +3,7 @@ use crate::state::*;
 use anchor_lang::{prelude::*, solana_program::program::invoke};
 use anchor_spl::{
     associated_token::get_associated_token_address,
-    token::{self, Burn, Token, TokenAccount, ID},
+    token::{Token, TokenAccount},
 };
 use mpl_token_metadata::{
     instruction::burn_nft,
@@ -164,16 +164,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         if edition_acc.is_none() {
             return Err(error!(ErrorCode::AtaAccsMismatch));
         }
-        let ix = burn_nft(
-            ctx.accounts.token_metadata_program.key(),
-            metadata,
-            owner,
-            nft,
-            ata,
-            edition,
-            ctx.accounts.token_program.key(),
-            None,
-        );
+
         let accs = vec![
             ctx.accounts.token_metadata_program.to_account_info(),
             ctx.accounts.payer.to_account_info(),
@@ -186,16 +177,19 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
             mint_acc.unwrap().to_account_info(),
             ata_acc.unwrap().to_account_info(),
         ];
-        invoke(&ix, accs.as_slice())?;
-        // let cpi_accounts = Burn {
-        //     authority: ctx.accounts.payer.to_account_info(),
-        //     from: ata_acc.unwrap().to_account_info(),
-        //     mint: mint_acc.unwrap().to_account_info(),
-        // };
-
-        // let cpi_program = ctx.accounts.token_program.to_account_info();
-        // let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
-        // token::burn(cpi_ctx, 1)?;
+        invoke(
+            &burn_nft(
+                ctx.accounts.token_metadata_program.key(),
+                metadata,
+                owner,
+                nft,
+                ata,
+                edition,
+                ctx.accounts.token_program.key(),
+                None,
+            ),
+            accs.as_slice(),
+        )?;
 
         let whole_nft = &mut *ctx.accounts.whole_nft;
 
