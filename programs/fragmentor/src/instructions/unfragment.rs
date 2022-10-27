@@ -44,6 +44,14 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
 ) -> Result<()> {
     let owner = ctx.accounts.payer.key();
 
+    let whole_nft = &*ctx.accounts.whole_nft;
+
+    let burned_nfts = whole_nft.fragments.iter().filter(|f| f.is_burned).count();
+
+    if burned_nfts == whole_nft.fragments.len() {
+        return Err(error!(ErrorCode::AllFragmentsDestroyed));
+    }
+
     // the remaining accs must be passed in the following order:
     // 1. the first items must be the fragmented nfts accounts
     // 2. the first items must be the fragmented nfts associated token accounts (ata)

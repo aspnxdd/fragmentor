@@ -15,7 +15,6 @@ import {
   AccountMeta,
   Keypair,
   TransactionInstruction,
-  Transaction,
 } from "@solana/web3.js";
 import BN from "bn.js";
 import {
@@ -264,8 +263,8 @@ export async function buildMintNftIxs(
     createAssociatedTokenAccountInstruction(owner, ata, owner, mintKey),
   ];
 
-  const metadataAddress = await getMetadata(mintKey);
-  const masterEdition = await getMasterEdition(mintKey);
+  const metadataAddress = getMetadata(mintKey);
+  const masterEdition = getMasterEdition(mintKey);
 
   const accounts: MintNftInstructionAccounts = {
     mintAuthority: owner,

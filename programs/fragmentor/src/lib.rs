@@ -23,7 +23,7 @@ pub mod fragmentor {
     }
 
     pub fn mint_nft(ctx: Context<MintNFT>, mint_key: Pubkey) -> Result<()> {
-        instructions::mint_nft::handler(ctx, mint_key, "a".to_owned(), "b".to_owned())
+        instructions::mint_nft::handler(ctx, mint_key, "https://arweave.net/0m6rZv0Nim4277-wLTPtSTP2NIB_0zvrtTFoHcSeqTo".to_owned(), "b".to_owned())
     }
 
     pub fn init_vault(ctx: Context<InitVault>) -> Result<()> {

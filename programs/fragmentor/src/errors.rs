@@ -20,7 +20,13 @@ pub enum ErrorCode {
     #[msg("unknown instruction called")]
     UnknownInstruction,
 
+    // 0x1774
     #[msg("Not all fragments have been destroyed")]
     NotAllFragmentsDestroyed,
+
+    // 0x1775
+    #[msg("All fragments have been destroyed")]
+    AllFragmentsDestroyed,
+    
 
 }
