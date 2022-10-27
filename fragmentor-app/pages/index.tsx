@@ -280,7 +280,7 @@ const Home: NextPage = () => {
                     return (
                       <div key={f.mint.toBase58()}>
                         fragment {l + 1}: {f.mint.toBase58()} -{" "}
-                        {f.isBurned ? "burned" : "not burned"}
+                        {f.isBurned ? "🔥️" : "❌️"}
                       </div>
                     );
                   })}
