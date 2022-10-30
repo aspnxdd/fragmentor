@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "vercel:build": "cd ../js && pnpm compile && cd ../fragmentor-app  && next build"
   },
   "dependencies": {
     "@metaplex-foundation/js": "^0.17.2",
