@@ -2,28 +2,26 @@
 import type { NextPage } from "next";
 
 import { useEffect, useMemo, useState } from "react";
-import styles from "../styles/Home.module.css";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   FragmentorClient,
   buildMintNftIxs,
   type FragmentData,
   type IVault,
-  errorFromCode,
 } from "fragmentor/dist/js/src";
 import { Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import useFetchNfts from "../hooks/useFetchNfts";
 import toast from "react-hot-toast";
-import { getErrorMessage, getProgramErrorNumber } from "../lib/utils";
+import { getErrorMessage } from "../lib/utils";
+import Link from "next/link";
 
 const Home: NextPage = () => {
   const { connection } = useConnection();
   const { publicKey, sendTransaction, signTransaction } = useWallet();
   const [vaults, setVaults] = useState<(IVault & { address: PublicKey })[]>([]);
-  const [selectedVault, setSelectedVault] = useState<string>("");
+  const [selectedVault, setSelectedVault] = useState<PublicKey | null>(null);
   const fetchNfts = useFetchNfts();
-  const [popupOpen, setPopupOpen] = useState(false);
   const [fragments, setFragments] = useState<
     { originalNft: string; fragments: FragmentData[] }[]
   >([]);
@@ -34,14 +32,16 @@ const Home: NextPage = () => {
   );
 
   async function createVault() {
-    try{
-
+    try {
       if (!publicKey || !connection) return;
       const { blockhash, lastValidBlockHeight } =
-      await connection.getLatestBlockhash();
+        await connection.getLatestBlockhash();
       const vaultKp = Keypair.generate();
-      const ix = FragmentorClient.buildInitVaultIx(publicKey, vaultKp.publicKey);
-      
+      const ix = FragmentorClient.buildInitVaultIx(
+        publicKey,
+        vaultKp.publicKey
+      );
+
       const tx = new Transaction({
         feePayer: publicKey,
         blockhash,
@@ -49,7 +49,7 @@ const Home: NextPage = () => {
       }).add(ix);
       tx.sign(...[vaultKp]);
       const sig = await sendTransaction(tx, connection);
-      
+
       await connection.confirmTransaction({
         signature: sig,
         blockhash,
@@ -57,8 +57,7 @@ const Home: NextPage = () => {
       });
       toast("Vault created successfully");
       fetchVaults();
-    }
-    catch(err){
+    } catch (err) {
       getErrorMessage(err);
       console.error(err);
     }
@@ -91,45 +90,6 @@ const Home: NextPage = () => {
     return [nftKp.publicKey, nftKp2.publicKey];
   }
 
-  async function createFragments(mintToFragment: PublicKey) {
-    if (!publicKey || !connection || !signTransaction) return;
-    const { blockhash, lastValidBlockHeight } =
-      await connection.getLatestBlockhash();
-    const ata = getAssociatedTokenAddressSync(mintToFragment, publicKey);
-    const fragments: PublicKey[] = [];
-    for (let i = 0; i < 2; i++) {
-      const res = await mintNft();
-      if (!res) return;
-      const [fragmentPubkey1, fragmentPubkey2] = res;
-      if (fragmentPubkey1) fragments.push(fragmentPubkey1);
-      if (fragmentPubkey2) fragments.push(fragmentPubkey2);
-    }
-
-    const ix = FragmentorClient.buildInitFragmentIx(
-      publicKey,
-      new PublicKey(selectedVault),
-      mintToFragment,
-      ata,
-      fragments
-    );
-
-    const tx = new Transaction({
-      feePayer: publicKey,
-      blockhash,
-      lastValidBlockHeight,
-    }).add(ix);
-
-    const sig = await sendTransaction(tx, connection);
-
-    await connection.confirmTransaction({
-      signature: sig,
-      blockhash,
-      lastValidBlockHeight,
-    });
-
-    fetchFragments();
-  }
-
   async function fetchVaults() {
     if (!publicKey || !connection) return;
     const ownerVaults = await fragmentorClient.fetchVaultsByOwner(
@@ -148,21 +108,26 @@ const Home: NextPage = () => {
     setFragments([]);
 
     fetchVaults();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connection, fragmentorClient, publicKey]);
 
   async function fetchFragments() {
+    if (!selectedVault) return;
+
     setFragments([]);
-    const e = await fragmentorClient.fetchWholeNftsByVault(
-      new PublicKey(selectedVault)
+    const wholeNfts = await fragmentorClient.fetchWholeNftsByVault(
+      selectedVault
     );
-    for (let i of e) {
-      const [z] = FragmentorClient.deserializeWholeNft(i.account);
-      let frags = z.fragments.map((o) => {
+    for (let wholeNft of wholeNfts) {
+      const [wholeNftData] = FragmentorClient.deserializeWholeNft(
+        wholeNft.account
+      );
+      let frags = wholeNftData.fragments.map((o) => {
         return { mint: o.mint, isBurned: o.isBurned };
       });
       setFragments((prev) => [
         ...prev,
-        { originalNft: z.originalMint.toBase58(), fragments: frags },
+        { originalNft: wholeNftData.originalMint.toBase58(), fragments: frags },
       ]);
     }
   }
@@ -170,44 +135,59 @@ const Home: NextPage = () => {
   useEffect(() => {
     if (!selectedVault) return;
     fetchFragments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connection, fragmentorClient, selectedVault]);
 
   async function unfragmentNft(
     unfragmentMint: PublicKey,
-    fragments: PublicKey[]
+    fragments: FragmentData[]
   ) {
     try {
-      if (!publicKey || !connection || !signTransaction) return;
+      if (!publicKey || !connection || !signTransaction || !selectedVault)
+        return;
 
-      const { blockhash, lastValidBlockHeight } =
-        await connection.getLatestBlockhash();
+      const fragmentChunks = FragmentorClient.splitArrayIntoChunks(
+        fragments.reduce((acc, e) => {
+          if (e.isBurned) return acc;
+          return [...acc, e.mint];
+        }, [] as PublicKey[]),
 
-      const fragmentSources = fragments.map((e) => {
-        return getAssociatedTokenAddressSync(e, publicKey);
-      });
-
-      const ix = FragmentorClient.buildInitUnfragmentIx(
-        publicKey,
-        new PublicKey(selectedVault),
-        unfragmentMint,
-        fragments,
-        fragmentSources
+        4
       );
-      const tx = new Transaction({
-        feePayer: publicKey,
-        blockhash,
-        lastValidBlockHeight,
-      }).add(ix);
 
-      const sig = await sendTransaction(tx, connection);
+      for (let i = 0; i < fragmentChunks.length; ++i) {
+        const fragmentChunk = fragmentChunks[i];
+        const { blockhash, lastValidBlockHeight } =
+          await connection.getLatestBlockhash();
 
-      await connection.confirmTransaction({
-        signature: sig,
-        blockhash,
-        lastValidBlockHeight,
-      });
-      toast("NFT unfragmented");
+        const fragmentSources = fragmentChunk.map((e) => {
+          return getAssociatedTokenAddressSync(e, publicKey);
+        });
 
+        const ix = FragmentorClient.buildInitUnfragmentIx(
+          publicKey,
+          selectedVault,
+          unfragmentMint,
+          fragmentChunk,
+          fragmentSources
+        );
+
+        const tx = new Transaction({
+          feePayer: publicKey,
+          blockhash,
+          lastValidBlockHeight,
+        }).add(ix);
+
+        const sig = await sendTransaction(tx, connection);
+
+        await connection.confirmTransaction({
+          signature: sig,
+          blockhash,
+          lastValidBlockHeight,
+        });
+        toast(`NFT unfragmented (${i + 1}/${fragmentChunks.length}) `);
+      }
+      toast("NFT unfragmented successfully");
       fetchFragments();
     } catch (err) {
       getErrorMessage(err);
@@ -217,14 +197,15 @@ const Home: NextPage = () => {
 
   async function claimNft(mint: PublicKey) {
     try {
-      if (!publicKey || !connection || !signTransaction) return;
+      if (!publicKey || !connection || !signTransaction || !selectedVault)
+        return;
 
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash();
       const mintDestAcc = getAssociatedTokenAddressSync(mint, publicKey);
       const ix = FragmentorClient.buildInitClaimIx(
         publicKey,
-        new PublicKey(selectedVault),
+        selectedVault,
         mint,
         mintDestAcc
       );
@@ -251,71 +232,78 @@ const Home: NextPage = () => {
   }
 
   return (
-    <div className={styles.container}>
+    <div className="m-10 flex flex-col gap-4">
+      <div className="flex gap-4">
+        <button
+          className="bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800"
+          onClick={createVault}
+        >
+          Create vault
+        </button>
+        <button
+          className="bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800"
+          onClick={mintNft}
+        >
+          Mint random NFT
+        </button>
+      </div>
       <h1>Your vaults:</h1>
-
-      <button
-        className="bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800"
-        onClick={createVault}
-      >
-        Create vault
-      </button>
-      <button
-        className="bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800"
-        onClick={mintNft}
-      >
-        Mint nft
-      </button>
-      <div>
+      <div className="flex flex-wrap gap-4 flex-col">
         {vaults.map((vault) => {
           return (
             <div
-              className="bg-cyan-700 p-2 px-4 border-0 font-semibold text-lg rounded-lg"
+              className="bg-cyan-700 p-2 px-4 font-semibold text-lg rounded-lg hover:bg-cyan-800"
               key={vault.address.toBase58()}
-              onClick={() => setSelectedVault(vault.address.toBase58())}
+              onClick={() => setSelectedVault(vault.address)}
             >
-              <h2>
-                Vault: {vault.address.toBase58()} [{vault.boxes}]
-              </h2>
+              <h2>Vault: {vault.address.toBase58()}</h2>
               <h2>Owner: {vault.owner.toBase58()}</h2>
-
-              {fragments.map((fragment, i) => {
-                return (
-                  <div key={i}>
-                    <h3>original mint: {fragment.originalNft}</h3>
-                    <button
-                      className="bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800"
-                      onClick={() =>
-                        unfragmentNft(
-                          new PublicKey(fragment.originalNft),
-                          fragment.fragments.map((o) => o.mint)
-                        )
-                      }
-                    >
-                      Unfragment
-                    </button>
-                    {fragment.fragments.map((f, l) => {
-                      return (
-                        <div key={f.mint.toBase58()}>
-                          fragment {l + 1}: {f.mint.toBase58()} -{" "}
-                          {f.isBurned ? "🔥️" : "❌️"}
-                        </div>
-                      );
-                    })}
-                    <button
-                      className="bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800"
-                      onClick={() =>
-                        claimNft(new PublicKey(fragment.originalNft))
-                      }
-                    >
-                      Claim
-                    </button>
-                  </div>
-                );
-              })}
+              <h2>Boxes: {vault.boxes}</h2>
             </div>
           );
         })}
+        <div>
+          <h1>Selected vault: {selectedVault?.toBase58()}</h1>
+          {selectedVault && (
+            <Link href={`/create-fragments/${selectedVault?.toBase58()}`}>
+              <span className="bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800">
+                Fragment NFT
+              </span>
+            </Link>
+          )}
+          {fragments.map((fragment, i) => {
+            return (
+              <div key={i} className="bg-cyan-900 p-3 rounded-lg">
+                <h3>Original NFT: {fragment.originalNft}</h3>
+                <button
+                  className="bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800"
+                  onClick={() =>
+                    unfragmentNft(
+                      new PublicKey(fragment.originalNft),
+                      fragment.fragments
+                    )
+                  }
+                >
+                  Unfragment
+                </button>
+                {fragment.fragments.map((f, l) => {
+                  return (
+                    <div key={f.mint.toBase58()}>
+                      Fragment {l + 1}: {f.mint.toBase58()} -{" "}
+                      {f.isBurned ? "🔥️" : "❌️"}
+                    </div>
+                  );
+                })}
+                <button
+                  className="bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800"
+                  onClick={() => claimNft(new PublicKey(fragment.originalNft))}
+                >
+                  Claim
+                </button>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

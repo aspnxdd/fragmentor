@@ -1,5 +1,5 @@
 import { Connection, PublicKey } from "@solana/web3.js";
-import { Metadata, Metaplex, Nft } from "@metaplex-foundation/js";
+import { type Metadata, Metaplex, type Nft } from "@metaplex-foundation/js";
 
 export class MetaplexClient {
   private metaplex: Metaplex;

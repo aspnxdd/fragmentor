@@ -1,5 +1,5 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { useAtom, useSetAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import { useMemo, useCallback } from "react";
 import { MetaplexClient } from "../lib/metaplex";
 import { walletNftsAtom } from "../states";

@@ -1,7 +1,7 @@
 import { errorFromCode } from "fragmentor/dist/js/src";
 import toast from "react-hot-toast";
 
-export function getProgramErrorNumber(str: string): string | undefined {
+function getProgramErrorNumber(str: string): string | undefined {
   return str.split(":").at(-1)?.trim();
 }
 

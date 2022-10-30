@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { FC, useEffect, useMemo, useState } from "react";
+import { type FC, useEffect, useMemo, useState } from "react";
 
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import Popup from "./Popup";
@@ -8,13 +8,14 @@ import { MetaplexClient } from "../lib/metaplex";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useAtomValue } from "jotai";
 import { walletNftsAtom } from "../states";
+import Link from "next/link";
 
 const Navbar: FC = () => {
   const [popupOpen, setPopupOpen] = useState(false);
   const fetchNfts = useFetchNfts();
   const { connection } = useConnection();
   const nfts = useAtomValue(walletNftsAtom);
-  const { publicKey, sendTransaction, signTransaction } = useWallet();
+  const { publicKey } = useWallet();
   const metaplexClient = useMemo(
     () => new MetaplexClient(connection),
     [connection]
@@ -28,7 +29,9 @@ const Navbar: FC = () => {
   return (
     <nav className="w-screen fixed top-0 left-0 flex justify-between items-center bg-slate-300">
       <div className=" ml-10">
-        <h1 className="text-5xl">Fragmentor </h1>
+        <Link href="/">
+          <h1 className="text-5xl cursor-pointer">Fragmentor </h1>
+        </Link>
       </div>
       <div className="flex items-center content-center">
         <button
@@ -38,7 +41,11 @@ const Navbar: FC = () => {
           Show NFTs
         </button>
 
-        <Popup show={popupOpen} onClose={() => setPopupOpen(false)} title="My NFTs">
+        <Popup
+          show={popupOpen}
+          onClose={() => setPopupOpen(false)}
+          title="My NFTs"
+        >
           <div className="flex flex-wrap">
             {nfts.map((e) => {
               return (
@@ -56,7 +63,13 @@ const Navbar: FC = () => {
           </div>
         </Popup>
         <div className="m-4">
-          <WalletMultiButton />
+          <WalletMultiButton
+            style={{
+              backgroundColor: "rgb(8 145 178)",
+              fontFamily: "inherit",
+              marginRight: "1rem",
+            }}
+          />
         </div>
       </div>
     </nav>
