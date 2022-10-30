@@ -153,7 +153,10 @@ const Home: NextPage = () => {
         }, [] as PublicKey[]),
         4
       );
-
+      if (fragmentChunks.length === 0) {
+        toast.error("All fragments have been already burned");
+        return;
+      }
       for (let i = 0; i < fragmentChunks.length; ++i) {
         const fragmentChunk = fragmentChunks[i];
         const { blockhash, lastValidBlockHeight } =
