@@ -51,7 +51,7 @@ import {
 type Replace<T, U extends PropertyKey, V> = Omit<T, U> & {
   [K in U]: V;
 };
-
+export type IVault = Replace<VaultArgs, "boxes", number>;
 export class FragmentorClient {
   private readonly connection: Connection;
 
@@ -75,11 +75,9 @@ export class FragmentorClient {
       .run(this.connection);
   }
 
-  static deserializeVault(
-    account: AccountInfo<Buffer>
-  ): [Replace<VaultArgs, "boxes", number>, number] {
+  static deserializeVault(account: AccountInfo<Buffer>): [IVault, number] {
     const [_data, n] = Vault.deserialize(account.data);
-    const data = { ..._data } as Replace<VaultArgs, "boxes", number>;
+    const data = { ..._data } as IVault;
     data.boxes = (_data.boxes as BN).toNumber();
     return [data, n];
   }

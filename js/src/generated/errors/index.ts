@@ -124,6 +124,29 @@ createErrorFromNameLookup.set(
 )
 
 /**
+ * AllFragmentsDestroyed: 'All fragments have been destroyed'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class AllFragmentsDestroyedError extends Error {
+  readonly code: number = 0x1775
+  readonly name: string = 'AllFragmentsDestroyed'
+  constructor() {
+    super('All fragments have been destroyed')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, AllFragmentsDestroyedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1775, () => new AllFragmentsDestroyedError())
+createErrorFromNameLookup.set(
+  'AllFragmentsDestroyed',
+  () => new AllFragmentsDestroyedError()
+)
+
+/**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  * @category generated
