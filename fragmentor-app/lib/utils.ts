@@ -9,6 +9,6 @@ export function getErrorMessage(err: unknown) {
   if ((err as Error).message.includes("custom program error")) {
     const errorNumber = getProgramErrorNumber((err as Error).message);
     const errr = errorFromCode(Number(errorNumber));
-    toast(errr?.message ?? errr?.name ?? "Unknown error", { icon: "❌" });
+    toast.error(errr?.message ?? errr?.name ?? "Unknown error");
   }
 }

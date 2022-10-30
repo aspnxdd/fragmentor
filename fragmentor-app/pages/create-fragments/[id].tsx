@@ -9,11 +9,11 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
 import { useAtomValue } from "jotai";
-import Popup from "../../components/Popup";
-import useFetchNfts from "../../hooks/useFetchNfts";
-import { MetaplexClient } from "../../lib/metaplex";
-import { walletNftsAtom } from "../../states";
-import { getErrorMessage } from "../../lib/utils";
+import Popup from "components/Popup";
+import useFetchNfts from "hooks/useFetchNfts";
+import { MetaplexClient } from "lib/metaplex";
+import { walletNftsAtom } from "states";
+import { getErrorMessage } from "lib/utils";
 
 const CreateFragment: NextPage = () => {
   const { query } = useRouter();
@@ -36,6 +36,7 @@ const CreateFragment: NextPage = () => {
     fetchNfts();
   }, [connection, fetchNfts, metaplexClient, publicKey, fragments]);
 
+  // @TODO - mint multiple nft in 1 tx
   async function mintNft(): Promise<PublicKey | undefined> {
     if (!publicKey || !connection) return;
     const { blockhash, lastValidBlockHeight } =
@@ -56,11 +57,11 @@ const CreateFragment: NextPage = () => {
       blockhash,
       lastValidBlockHeight,
     });
-    toast("NFT minted");
     return nftKp.publicKey;
   }
 
   async function createFragments(mintToFragment: PublicKey) {
+    let lastToast: string | null = null;
     try {
       if (
         !publicKey ||
@@ -74,13 +75,24 @@ const CreateFragment: NextPage = () => {
         await connection.getLatestBlockhash();
       const ata = getAssociatedTokenAddressSync(mintToFragment, publicKey);
       const fragments: PublicKey[] = [];
+
       for (let i = 0; i < fragmentParts; i++) {
         const res = await mintNft();
         if (!res) return;
         const fragmentPubkey = res;
         if (fragmentPubkey) fragments.push(fragmentPubkey);
+        const toastId = toast.success(
+          `Minting fragment ${i + 1} of ${fragmentParts}...`,
+          {
+            duration: Infinity,
+          }
+        );
+        if (lastToast) toast.dismiss(lastToast);
+        lastToast = toastId;
+
         setFragments((prev) => [...prev, fragmentPubkey.toBase58()]);
       }
+      if (lastToast) setTimeout(() => toast.dismiss(lastToast!), 2000);
 
       const ix = FragmentorClient.buildInitFragmentIx(
         publicKey,
@@ -104,10 +116,11 @@ const CreateFragment: NextPage = () => {
         lastValidBlockHeight,
       });
       setSelectedNft(null);
-      toast("Fragments created");
+      toast.success("Fragments created");
     } catch (err) {
       getErrorMessage(err);
       console.error(err);
+      if (lastToast) toast.dismiss(lastToast);
     }
   }
 
