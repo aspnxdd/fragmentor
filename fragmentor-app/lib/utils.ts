@@ -1,4 +1,4 @@
-import { errorFromCode } from "fragmentor/dist/js/src";
+import { errorFromCode } from "fragmentor";
 import toast from "react-hot-toast";
 
 function getProgramErrorNumber(str: string): string | undefined {

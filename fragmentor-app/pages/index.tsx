@@ -8,7 +8,7 @@ import {
   buildMintNftIxs,
   type FragmentData,
   type IVault,
-} from "fragmentor/dist/js/src";
+} from "fragmentor";
 import { Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import useFetchNfts from "hooks/useFetchNfts";

@@ -3,7 +3,7 @@ import type { NextPage } from "next";
 
 import { useEffect, useMemo, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { FragmentorClient, buildMintNftIxs } from "fragmentor/dist/js/src";
+import { FragmentorClient, buildMintNftIxs } from "fragmentor";
 import { Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import toast from "react-hot-toast";
