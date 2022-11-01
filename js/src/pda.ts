@@ -1,5 +1,4 @@
 import { PublicKey } from "@solana/web3.js";
-import { program } from "../tests/utils";
 
 const PROGRAM = new PublicKey("CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed");
 type PDA = [PublicKey, number];
