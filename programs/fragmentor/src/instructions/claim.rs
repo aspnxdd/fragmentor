@@ -22,7 +22,6 @@ pub struct Claim<'info> {
     bump=bump_whole_nft)]
     pub whole_nft: Account<'info, WholeNft>,
 
-    // @TODO - make authority a from vault
     #[account(mut,
     seeds=[
         b"whole_nft_throne",

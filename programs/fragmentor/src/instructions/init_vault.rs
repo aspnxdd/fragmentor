@@ -20,11 +20,8 @@ pub fn handler(ctx: Context<InitVault>) -> Result<()> {
 
     // derive the authority responsible for all token transfers within the new vault
     let vault_address = vault.key();
-    msg!("vault address: {:?}", vault_address);
     let authority_seed = &[vault_address.as_ref()];
     let (authority, bump) = Pubkey::find_program_address(authority_seed, ctx.program_id);
-    msg!("authority address: {:?}", authority);
-    msg!("authority bump: {:?}", bump);
 
     vault.owner = creator;
     vault.authority = authority;

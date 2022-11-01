@@ -18,6 +18,10 @@ A lot is still missing, but we will get there!
 
 **Note**: You can try the frontend app build with NextJS by running `pnpm dev:app` from the root.
 
+### ❇️ Deployment
+
+Program is currently only deployed on devnet as `FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh`
+
 ### 📜 To-do
 
 - [ ] Write docs.
