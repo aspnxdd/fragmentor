@@ -114,7 +114,9 @@ export async function buildMintNftIx(): Promise<
   };
 
   const ix = createMintNftInstruction(accounts, {
-    mintKey: mintKey.publicKey,
+    title: "test",
+    uri: "test",
+    symbol:"sy"
   });
 
   return [mintKey, ix];

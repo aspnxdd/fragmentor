@@ -46,11 +46,10 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
 
     let whole_nft = &*ctx.accounts.whole_nft;
 
-    let burned_nfts = whole_nft.fragments.iter().filter(|f| f.is_burned).count();
-
-    if burned_nfts == whole_nft.fragments.len() {
-        return Err(error!(ErrorCode::AllFragmentsDestroyed));
-    }
+    require!(
+        whole_nft.assert_all_fragments_not_burned(),
+        ErrorCode::AllFragmentsDestroyed
+    );
 
     // the remaining accs must be passed in the following order:
     // 1. the first items must be the fragmented nfts accounts
@@ -63,7 +62,6 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     let mut metadata_accs = vec![];
     let mut edition_accs = vec![];
 
-    msg!("remaining_accs_len: {}", remaining_accs_len);
     // map all the mint accs
     for _ in 0..(remaining_accs_len / 4) {
         let acc = next_account_info(remaining_accs);
@@ -72,7 +70,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
                 mint_accs.push(acc);
             }
             Err(_) => {
-                return Err(error!(ErrorCode::NftsMismatch));
+                return Err(error!(ErrorCode::MintAccsMismatch));
             }
         }
     }
@@ -85,7 +83,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
                 ata_accs.push(acc);
             }
             Err(_) => {
-                return Err(error!(ErrorCode::NftsMismatch));
+                return Err(error!(ErrorCode::AtaAccsMismatch));
             }
         }
     }
@@ -98,7 +96,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
                 metadata_accs.push(acc);
             }
             Err(_) => {
-                return Err(error!(ErrorCode::NftsMismatch));
+                return Err(error!(ErrorCode::MetadataAccsMismatch));
             }
         }
     }
@@ -111,41 +109,46 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
                 edition_accs.push(acc);
             }
             Err(_) => {
-                return Err(error!(ErrorCode::NftsMismatch));
+                return Err(error!(ErrorCode::EditionAccsMismatch));
             }
         }
     }
 
-    msg!("mint_accs: {}", mint_accs.len());
-    msg!("ata_accs_len: {}", ata_accs.len());
-    msg!("fragmented_nfts: {}", fragmented_nfts.len());
-
     if mint_accs.len() != fragmented_nfts.len() {
-        return Err(error!(ErrorCode::NftsMismatch));
+        return Err(error!(ErrorCode::MintAccsMismatch));
     }
     if ata_accs.len() != fragmented_nfts.len() {
-        return Err(error!(ErrorCode::NftsMismatch));
+        return Err(error!(ErrorCode::AtaAccsMismatch));
+    }
+    if metadata_accs.len() != fragmented_nfts.len() {
+        return Err(error!(ErrorCode::MetadataAccsMismatch));
+    }
+    if edition_accs.len() != fragmented_nfts.len() {
+        return Err(error!(ErrorCode::EditionAccsMismatch));
     }
 
-    // // check user is sending some fragments
+    // check user is sending all the fragmented nfts whose accounts were provided
     let accum = mint_accs.iter().fold(0, |acc, mint| {
         if !fragmented_nfts.contains(&mint.key()) {
             return acc;
         }
         acc + 1
     });
+
     if accum != fragmented_nfts.len() {
         return Err(error!(ErrorCode::MintAccsMismatch));
     }
 
     // // burn fragmented nft
     for fragmented_nft in &fragmented_nfts {
-        let nft = fragmented_nft.clone();
+        let fragment = fragmented_nft.clone();
         let ata = get_associated_token_address(&owner.key(), &fragmented_nft.key());
         let (metadata, _) = find_metadata_account(&fragmented_nft.key());
         let (edition, _) = find_master_edition_account(&fragmented_nft.key());
 
-        let mint_acc = mint_accs.iter().find(|&&mint| &mint.key() == &nft.key());
+        let mint_acc = mint_accs
+            .iter()
+            .find(|&&mint_acc_info| &mint_acc_info.key() == &fragment.key());
 
         if mint_acc.is_none() {
             return Err(error!(ErrorCode::MintAccsMismatch));
@@ -155,22 +158,24 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
             .iter()
             .find(|&&ata_acc_info| ata_acc_info.key() == ata);
 
+        if ata_acc.is_none() {
+            return Err(error!(ErrorCode::AtaAccsMismatch));
+        }
+
         let metadata_acc = metadata_accs
             .iter()
             .find(|&&metadata_acc_info| metadata_acc_info.key() == metadata);
+
+        if metadata_acc.is_none() {
+            return Err(error!(ErrorCode::MetadataAccsMismatch));
+        }
 
         let edition_acc = edition_accs
             .iter()
             .find(|&&edition_acc_info| edition_acc_info.key() == edition);
 
-        if ata_acc.is_none() {
-            return Err(error!(ErrorCode::AtaAccsMismatch));
-        }
-        if metadata_acc.is_none() {
-            return Err(error!(ErrorCode::AtaAccsMismatch));
-        }
         if edition_acc.is_none() {
-            return Err(error!(ErrorCode::AtaAccsMismatch));
+            return Err(error!(ErrorCode::EditionAccsMismatch));
         }
 
         let accs = vec![
@@ -187,7 +192,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
                 ctx.accounts.token_metadata_program.key(),
                 metadata,
                 owner,
-                nft,
+                fragment,
                 ata,
                 edition,
                 ctx.accounts.token_program.key(),
@@ -198,17 +203,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
 
         let whole_nft = &mut *ctx.accounts.whole_nft;
 
-        let fragment_index = whole_nft
-            .fragments
-            .iter()
-            .position(|fragment| fragment.mint == nft.key());
-
-        match fragment_index {
-            Some(i) => whole_nft.fragments[i].is_burned = true,
-            None => {
-                return Err(error!(ErrorCode::NftsMismatch));
-            }
-        }
+        whole_nft.set_fragment_as_burned(fragment.key())?;
     }
 
     Ok(())

@@ -75,16 +75,7 @@ pub fn handler(
 ) -> Result<()> {
     ctx.accounts.whole_nft.original_mint = original_nft;
 
-    let fragments = fragmented_nfts
-        .clone()
-        .iter()
-        .map(|fragment| FragmentData {
-            mint: *fragment,
-            is_burned: false,
-        })
-        .collect();
-
-    ctx.accounts.whole_nft.fragments = fragments;
+    ctx.accounts.whole_nft.init_fragments(fragmented_nfts)?;
     ctx.accounts.whole_nft.vault = ctx.accounts.vault.key();
     let vault = &*ctx.accounts.vault;
     token::transfer(

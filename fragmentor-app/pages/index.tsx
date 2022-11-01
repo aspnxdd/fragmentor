@@ -16,6 +16,8 @@ import toast from "react-hot-toast";
 import { getErrorMessage } from "lib/utils";
 import Link from "next/link";
 
+const URI = "https://arweave.net/0m6rZv0Nim4277-wLTPtSTP2NIB_0zvrtTFoHcSeqTo";
+
 const Home: NextPage = () => {
   const { connection } = useConnection();
   const { publicKey, sendTransaction, signTransaction } = useWallet();
@@ -68,7 +70,14 @@ const Home: NextPage = () => {
     const { blockhash, lastValidBlockHeight } =
       await connection.getLatestBlockhash();
     const nftKp = Keypair.generate();
-    const ixs = await buildMintNftIxs(connection, publicKey, nftKp.publicKey);
+    const ixs = await buildMintNftIxs(
+      connection,
+      publicKey,
+      nftKp.publicKey,
+      "b",
+      URI,
+      "symb"
+    );
 
     const tx = new Transaction({
       feePayer: publicKey,

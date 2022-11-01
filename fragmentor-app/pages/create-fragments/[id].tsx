@@ -15,6 +15,8 @@ import { MetaplexClient } from "lib/metaplex";
 import { walletNftsAtom } from "states";
 import { getErrorMessage } from "lib/utils";
 
+const URI = "https://arweave.net/0m6rZv0Nim4277-wLTPtSTP2NIB_0zvrtTFoHcSeqTo"
+
 const CreateFragment: NextPage = () => {
   const { query } = useRouter();
   const vault = query.id;
@@ -42,7 +44,7 @@ const CreateFragment: NextPage = () => {
     const { blockhash, lastValidBlockHeight } =
       await connection.getLatestBlockhash();
     const nftKp = Keypair.generate();
-    const ixs = await buildMintNftIxs(connection, publicKey, nftKp.publicKey);
+    const ixs = await buildMintNftIxs(connection, publicKey, nftKp.publicKey, "b", URI, "symb");
 
     const tx = new Transaction({
       feePayer: publicKey,

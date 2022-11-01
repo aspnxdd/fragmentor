@@ -56,8 +56,8 @@ describe("fragmentor", async () => {
     fragment7 = _fragment7;
 
     // max can jam 5 ixs into 1 tx
-    const t1 = new Transaction().add(ix00, ix01, ix02, ix03, ix04);
-    const t2 = new Transaction().add(ix05, ix06, ix07);
+    const t1 = new Transaction().add(ix00, ix01, ix02, ix03);
+    const t2 = new Transaction().add(ix04, ix05, ix06, ix07);
     await program?.provider?.sendAndConfirm?.(t1, [wallet.payer]);
     await program?.provider?.sendAndConfirm?.(t2, [wallet.payer]);
 
@@ -137,7 +137,6 @@ describe("fragmentor", async () => {
   });
 
   it("Init Fragment", async () => {
-   
     const ix = FragmentorClient.buildInitFragmentIx(
       secondWallet.publicKey,
       vault.publicKey,

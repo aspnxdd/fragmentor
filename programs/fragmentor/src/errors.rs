@@ -17,14 +17,22 @@ pub enum ErrorCode {
     AtaAccsMismatch,
 
     // 0x1773
+    #[msg("MetadataAccs mismatch")]
+    MetadataAccsMismatch,
+
+    // 0x1774
+    #[msg("EditionAccs mismatch")]
+    EditionAccsMismatch,
+
+    // 0x1775
     #[msg("unknown instruction called")]
     UnknownInstruction,
 
-    // 0x1774
+    // 0x1776
     #[msg("Not all fragments have been destroyed")]
     NotAllFragmentsDestroyed,
 
-    // 0x1775
+    // 0x1777
     #[msg("All fragments have been destroyed")]
     AllFragmentsDestroyed,
     

@@ -34,9 +34,9 @@ pub struct MintNFT<'info> {
 
 pub fn handler(
     ctx: Context<MintNFT>,
-    creator_key: Pubkey,
     uri: String,
     title: String,
+    symbol:String
 ) -> Result<()> {
     let cpi_accounts = MintTo {
         mint: ctx.accounts.mint.to_account_info(),
@@ -58,7 +58,7 @@ pub fn handler(
     ];
     let creator = vec![
         mpl_token_metadata::state::Creator {
-            address: creator_key,
+            address: ctx.accounts.mint.key(),
             verified: false,
             share: 100,
         },
@@ -68,7 +68,6 @@ pub fn handler(
             share: 0,
         },
     ];
-    let symbol = std::string::ToString::to_string("symb");
     invoke(
         &create_metadata_accounts_v3(
             ctx.accounts.token_metadata_program.key(),

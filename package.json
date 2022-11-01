@@ -5,7 +5,8 @@
     "test": "amman run -- anchor test --skip-local-validator",
     "solita": "solita",
     "airdrop": "amman airdrop wallet.json 100",
-    "dev:app": "pnpm --filter fragmentor-app run dev"
+    "dev:app": "pnpm --filter fragmentor-app run dev",
+    "compile": "pnpm --filter fragmentor run compile"
   },
   "dependencies": {
     "@metaplex-foundation/amman": "^0.12.0",

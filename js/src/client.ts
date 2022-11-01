@@ -241,7 +241,10 @@ export class FragmentorClient {
 export async function buildMintNftIxs(
   connection: Connection,
   owner: PublicKey,
-  mintKey: PublicKey
+  mintKey: PublicKey,
+  title: string,
+  uri: string,
+  symbol: string
 ): Promise<TransactionInstruction[]> {
   const lamports = await connection.getMinimumBalanceForRentExemption(
     MINT_SIZE
@@ -277,7 +280,9 @@ export async function buildMintNftIxs(
   };
 
   const ix = createMintNftInstruction(accounts, {
-    mintKey: mintKey,
+    title,
+    uri,
+    symbol,
   });
   ixs.push(ix);
   return ixs;

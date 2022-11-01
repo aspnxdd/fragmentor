@@ -6,9 +6,8 @@
  */
 
 import * as splToken from '@solana/spl-token'
-import * as web3 from '@solana/web3.js'
-import * as beetSolana from '@metaplex-foundation/beet-solana'
 import * as beet from '@metaplex-foundation/beet'
+import * as web3 from '@solana/web3.js'
 
 /**
  * @category Instructions
@@ -16,21 +15,25 @@ import * as beet from '@metaplex-foundation/beet'
  * @category generated
  */
 export type MintNftInstructionArgs = {
-  mintKey: web3.PublicKey
+  uri: string
+  title: string
+  symbol: string
 }
 /**
  * @category Instructions
  * @category MintNft
  * @category generated
  */
-export const mintNftStruct = new beet.BeetArgsStruct<
+export const mintNftStruct = new beet.FixableBeetArgsStruct<
   MintNftInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['mintKey', beetSolana.publicKey],
+    ['uri', beet.utf8String],
+    ['title', beet.utf8String],
+    ['symbol', beet.utf8String],
   ],
   'MintNftInstructionArgs'
 )

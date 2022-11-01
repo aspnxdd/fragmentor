@@ -78,13 +78,59 @@ createErrorFromNameLookup.set(
 )
 
 /**
+ * MetadataAccsMismatch: 'MetadataAccs mismatch'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class MetadataAccsMismatchError extends Error {
+  readonly code: number = 0x1773
+  readonly name: string = 'MetadataAccsMismatch'
+  constructor() {
+    super('MetadataAccs mismatch')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, MetadataAccsMismatchError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1773, () => new MetadataAccsMismatchError())
+createErrorFromNameLookup.set(
+  'MetadataAccsMismatch',
+  () => new MetadataAccsMismatchError()
+)
+
+/**
+ * EditionAccsMismatch: 'EditionAccs mismatch'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class EditionAccsMismatchError extends Error {
+  readonly code: number = 0x1774
+  readonly name: string = 'EditionAccsMismatch'
+  constructor() {
+    super('EditionAccs mismatch')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, EditionAccsMismatchError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1774, () => new EditionAccsMismatchError())
+createErrorFromNameLookup.set(
+  'EditionAccsMismatch',
+  () => new EditionAccsMismatchError()
+)
+
+/**
  * UnknownInstruction: 'unknown instruction called'
  *
  * @category Errors
  * @category generated
  */
 export class UnknownInstructionError extends Error {
-  readonly code: number = 0x1773
+  readonly code: number = 0x1775
   readonly name: string = 'UnknownInstruction'
   constructor() {
     super('unknown instruction called')
@@ -94,7 +140,7 @@ export class UnknownInstructionError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1773, () => new UnknownInstructionError())
+createErrorFromCodeLookup.set(0x1775, () => new UnknownInstructionError())
 createErrorFromNameLookup.set(
   'UnknownInstruction',
   () => new UnknownInstructionError()
@@ -107,7 +153,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class NotAllFragmentsDestroyedError extends Error {
-  readonly code: number = 0x1774
+  readonly code: number = 0x1776
   readonly name: string = 'NotAllFragmentsDestroyed'
   constructor() {
     super('Not all fragments have been destroyed')
@@ -117,7 +163,7 @@ export class NotAllFragmentsDestroyedError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1774, () => new NotAllFragmentsDestroyedError())
+createErrorFromCodeLookup.set(0x1776, () => new NotAllFragmentsDestroyedError())
 createErrorFromNameLookup.set(
   'NotAllFragmentsDestroyed',
   () => new NotAllFragmentsDestroyedError()
@@ -130,7 +176,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class AllFragmentsDestroyedError extends Error {
-  readonly code: number = 0x1775
+  readonly code: number = 0x1777
   readonly name: string = 'AllFragmentsDestroyed'
   constructor() {
     super('All fragments have been destroyed')
@@ -140,7 +186,7 @@ export class AllFragmentsDestroyedError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1775, () => new AllFragmentsDestroyedError())
+createErrorFromCodeLookup.set(0x1777, () => new AllFragmentsDestroyedError())
 createErrorFromNameLookup.set(
   'AllFragmentsDestroyed',
   () => new AllFragmentsDestroyedError()
