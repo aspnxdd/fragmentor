@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 
-const PROGRAM = new PublicKey("CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed");
+const PROGRAM = new PublicKey("FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh");
 type PDA = [PublicKey, number];
 export function getWholeNftPda(mintKey: PublicKey, vault: PublicKey): PDA {
   const [wholeNftPDA, wholeNftPDABump] = PublicKey.findProgramAddressSync(

@@ -51,7 +51,7 @@ export const initVaultInstructionDiscriminator = [
  */
 export function createInitVaultInstruction(
   accounts: InitVaultInstructionAccounts,
-  programId = new web3.PublicKey('CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed')
+  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh')
 ) {
   const [data] = initVaultStruct.serialize({
     instructionDiscriminator: initVaultInstructionDiscriminator,

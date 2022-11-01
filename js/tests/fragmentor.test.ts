@@ -115,6 +115,7 @@ describe("fragmentor", async () => {
     // console.log({ wholeNftPDABump: wholeNftPDABump });
     // console.log({ vault: vault.publicKey.toBase58() });
     const [vaultAuthPDA] = getVaultAuthPda(vault.publicKey);
+    console.log({ vaultAuthPDA: vaultAuthPDA.toBase58() });
 
     const ix = FragmentorClient.buildInitVaultIx(
       wallet.publicKey,

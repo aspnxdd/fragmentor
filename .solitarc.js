@@ -7,7 +7,7 @@ const binaryInstallDir = path.join(__dirname, ".crates");
 module.exports = {
   idlGenerator: "anchor",
   programName: "fragmentor",
-  programId: "CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed",
+  programId: "FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh",
   idlDir,
   sdkDir,
   binaryInstallDir,

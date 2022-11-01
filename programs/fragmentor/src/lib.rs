@@ -6,7 +6,7 @@ mod errors;
 mod instructions;
 mod state;
 
-declare_id!("CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed");
+declare_id!("FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh");
 
 #[program]
 pub mod fragmentor {

@@ -30,6 +30,7 @@ pub fn handler(ctx: Context<InitVault>) -> Result<()> {
     vault.authority = authority;
     vault.authority_seed = vault_address;
     vault.authority_bump_seed = [bump];
+    vault.boxes = 0;
 
     Ok(())
 }

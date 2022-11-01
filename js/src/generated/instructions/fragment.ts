@@ -85,7 +85,7 @@ export const fragmentInstructionDiscriminator = [
 export function createFragmentInstruction(
   accounts: FragmentInstructionAccounts,
   args: FragmentInstructionArgs,
-  programId = new web3.PublicKey('CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed')
+  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh')
 ) {
   const [data] = fragmentStruct.serialize({
     instructionDiscriminator: fragmentInstructionDiscriminator,

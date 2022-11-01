@@ -1,10 +1,10 @@
 [features]
 seeds = false
 [programs.localnet]
-fragmentor = "CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed"
+fragmentor = "FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh"
 
 [programs.devnet]
-fragmentor = "CdYdVmD7bDbr2CfSHDhY5HP51ZV8weQsQBQgXiVzAyed"
+fragmentor = "FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh"
 
 [registry]
 url = "https://anchor.projectserum.com"
