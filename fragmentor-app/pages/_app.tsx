@@ -11,6 +11,7 @@ import Navbar from "components/Navbar";
 import { Toaster } from "react-hot-toast";
 import Head from "next/head";
 import { clusterApiUrl } from "@solana/web3.js";
+import Footer from "components/Footer";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
@@ -33,6 +34,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <div className="mt-20 flex">
             <Component {...pageProps} />
           </div>
+          <Footer />
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
