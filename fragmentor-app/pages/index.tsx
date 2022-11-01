@@ -113,7 +113,6 @@ const Home: NextPage = () => {
   useEffect(() => {
     setVaults([]);
     setFragments([]);
-
     fetchVaults();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connection, fragmentorClient, publicKey]);
@@ -308,7 +307,7 @@ const Home: NextPage = () => {
             </Link>
           )}
           <div className="flex flex-wrap gap-6">
-            {fragments.map((fragment, i) => {
+            {fragments.map((fragment) => {
               return (
                 <div
                   key={fragment.originalNft}
@@ -328,10 +327,10 @@ const Home: NextPage = () => {
                   >
                     Unfragment
                   </button>
-                  {fragment.fragments.map((f, l) => {
+                  {fragment.fragments.map((f, index) => {
                     return (
                       <div key={f.mint.toBase58()}>
-                        <strong>Fragment {l + 1}:</strong> {f.mint.toBase58()}
+                        <strong>Fragment {index + 1}:</strong> {f.mint.toBase58()}
                         {f.isBurned ? "🔥️" : "❌️"}
                       </div>
                     );

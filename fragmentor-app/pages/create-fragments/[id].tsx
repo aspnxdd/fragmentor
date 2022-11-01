@@ -13,9 +13,9 @@ import Popup from "components/Popup";
 import useFetchNfts from "hooks/useFetchNfts";
 import { MetaplexClient } from "lib/metaplex";
 import { walletNftsAtom } from "states";
-import { getErrorMessage } from "lib/utils";
+import { getErrorMessage, trimAddress } from "lib/utils";
 
-const URI = "https://arweave.net/0m6rZv0Nim4277-wLTPtSTP2NIB_0zvrtTFoHcSeqTo"
+const URI = "https://arweave.net/0m6rZv0Nim4277-wLTPtSTP2NIB_0zvrtTFoHcSeqTo";
 
 const CreateFragment: NextPage = () => {
   const { query } = useRouter();
@@ -44,7 +44,14 @@ const CreateFragment: NextPage = () => {
     const { blockhash, lastValidBlockHeight } =
       await connection.getLatestBlockhash();
     const nftKp = Keypair.generate();
-    const ixs = await buildMintNftIxs(connection, publicKey, nftKp.publicKey, "b", URI, "symb");
+    const ixs = await buildMintNftIxs(
+      connection,
+      publicKey,
+      nftKp.publicKey,
+      "b",
+      URI,
+      "symb"
+    );
 
     const tx = new Transaction({
       feePayer: publicKey,
@@ -139,24 +146,26 @@ const CreateFragment: NextPage = () => {
         onClose={() => setPopupOpen(false)}
         title="My NFTs"
       >
-        <div className="flex flex-wrap">
-          {nfts.map((e) => {
+        <div className="flex flex-wrap gap-4">
+          {nfts.map((nft) => {
             return (
               <figure
-                key={e.mint.address.toBase58()}
+                key={nft.mint.address.toBase58()}
                 onClick={() => {
-                  setSelectedNft(e.mint.address.toBase58());
+                  setSelectedNft(nft.mint.address.toBase58());
                   setPopupOpen(false);
                   setFragments([]);
                 }}
               >
                 <img
-                  src={e.json?.image}
-                  alt={e.mint.address.toBase58()}
+                  src={nft.json?.image}
+                  alt={nft.mint.address.toBase58()}
                   width="110"
                 />
-                <figcaption>{e.name}</figcaption>
-                <figcaption>{e.mint.address.toBase58()}</figcaption>
+                <figcaption>{nft.name}</figcaption>
+                <figcaption>
+                  {trimAddress(nft.mint.address.toBase58())}
+                </figcaption>
               </figure>
             );
           })}
@@ -200,7 +209,7 @@ const CreateFragment: NextPage = () => {
       {fragments.length > 0 && (
         <div>
           <h2>Fragments</h2>
-          <div className="flex flex-wrap">
+          <div className="flex flex-wrap gap-4">
             {fragments.map((fragment) => {
               return (
                 <figure key={fragment}>
@@ -212,7 +221,8 @@ const CreateFragment: NextPage = () => {
                     alt={fragment}
                     width="110"
                   />
-                  <figcaption>{fragment}</figcaption>
+
+                  <figcaption>{trimAddress(fragment)}</figcaption>
                 </figure>
               );
             })}

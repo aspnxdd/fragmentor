@@ -10,11 +10,12 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import Navbar from "components/Navbar";
 import { Toaster } from "react-hot-toast";
 import Head from "next/head";
+import { clusterApiUrl } from "@solana/web3.js";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const endpoint = "http://localhost:8899/";
+  const endpoint = process.env.NEXT_PUBLIC_RPC || clusterApiUrl("devnet");
 
   const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
 

@@ -10,6 +10,8 @@ import { useAtomValue } from "jotai";
 import { walletNftsAtom } from "../states";
 import Link from "next/link";
 import Image from "next/image";
+import { trimAddress } from "lib/utils";
+
 const Navbar: FC = () => {
   const [popupOpen, setPopupOpen] = useState(false);
   const fetchNfts = useFetchNfts();
@@ -28,12 +30,12 @@ const Navbar: FC = () => {
 
   return (
     <nav className="w-screen fixed top-0 left-0 flex justify-between items-center bg-slate-300">
-        <Link href="/">
-          <a className="ml-10 flex gap-4">
-            <Image src="/ico.webp" width="60" height="50" alt="icon" />
-            <h1 className="text-5xl cursor-pointer">Fragmentor </h1>
-          </a>
-        </Link>
+      <Link href="/">
+        <a className="ml-10 flex gap-4">
+          <Image src="/ico.webp" width="60" height="50" alt="icon" />
+          <h1 className="text-5xl cursor-pointer">Fragmentor </h1>
+        </a>
+      </Link>
       <div className="flex items-center content-center">
         <button
           className="bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800"
@@ -47,7 +49,7 @@ const Navbar: FC = () => {
           onClose={() => setPopupOpen(false)}
           title="My NFTs"
         >
-          <div className="flex flex-wrap mt-10">
+          <div className="flex flex-wrap mt-10 gap-4">
             {nfts.map((e) => {
               return (
                 <figure key={e.mint.address.toBase58()}>
@@ -57,7 +59,9 @@ const Navbar: FC = () => {
                     width="110"
                   />
                   <figcaption>{e.name}</figcaption>
-                  <figcaption>{e.mint.address.toBase58()}</figcaption>
+                  <figcaption>
+                    {trimAddress(e.mint.address.toBase58())}
+                  </figcaption>
                 </figure>
               );
             })}
