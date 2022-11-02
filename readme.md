@@ -45,5 +45,6 @@ Note that deploying your own version will cost you ~4 SOL.
 
 - [ ] Write docs.
 - [ ] Backend to split an image into multiple images, representing fragments, graphically, of the original NFT image.
+- [ ] Improve tests.
 
 MIT License
