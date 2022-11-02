@@ -1,7 +1,6 @@
 use crate::errors::ErrorCode;
+use crate::MAX_FRAGMENTS;
 use anchor_lang::prelude::*;
-
-pub const WHOLE_NFT_SIZE: usize = 32 + 32 + 20 * std::mem::size_of::<FragmentData>();
 
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, Eq, AnchorSerialize, AnchorDeserialize)]
@@ -19,6 +18,8 @@ pub struct WholeNft {
 }
 
 impl WholeNft {
+    pub const LEN: usize = 32 + 32 + MAX_FRAGMENTS * std::mem::size_of::<FragmentData>();
+
     pub fn assert_all_fragments_burned(&self) -> bool {
         !self.fragments.iter().any(|f| !f.is_burned)
     }
@@ -43,7 +44,7 @@ impl WholeNft {
         Ok(())
     }
 
-    pub fn init_fragments(&mut self, nfts: Vec<Pubkey>) -> Result<()> {
+    fn init_fragments(nfts: Vec<Pubkey>) -> Vec<FragmentData> {
         let mut fragments = vec![];
         for nft in nfts {
             fragments.push(FragmentData {
@@ -52,8 +53,14 @@ impl WholeNft {
             });
         }
 
-        self.fragments = fragments;
+        fragments
+    }
 
-        Ok(())
+    pub fn new(original_mint: &Pubkey, fragmented_nfts: Vec<Pubkey>, vault: &Pubkey) -> Self {
+        Self {
+            fragments: WholeNft::init_fragments(fragmented_nfts),
+            original_mint: original_mint.key(),
+            vault: vault.key(),
+        }
     }
 }

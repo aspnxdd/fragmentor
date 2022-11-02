@@ -1,8 +1,7 @@
 use anchor_lang::{prelude::*, solana_program::program::invoke};
+use anchor_spl::token;
 use anchor_spl::token::{MintTo, Token};
 use mpl_token_metadata::instruction::{create_master_edition_v3, create_metadata_accounts_v3};
-
-use anchor_spl::token;
 
 #[derive(Accounts)]
 pub struct MintNFT<'info> {
@@ -32,20 +31,23 @@ pub struct MintNFT<'info> {
     pub master_edition: UncheckedAccount<'info>,
 }
 
-pub fn handler(
-    ctx: Context<MintNFT>,
-    uri: String,
-    title: String,
-    symbol:String
-) -> Result<()> {
-    let cpi_accounts = MintTo {
-        mint: ctx.accounts.mint.to_account_info(),
-        to: ctx.accounts.token_account.to_account_info(),
-        authority: ctx.accounts.payer.to_account_info(),
-    };
-    let cpi_program = ctx.accounts.token_program.to_account_info();
-    let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
-    token::mint_to(cpi_ctx, 1)?;
+impl<'info> MintNFT<'info> {
+    fn mint_to_ctx(&self) -> CpiContext<'_, '_, '_, 'info, MintTo<'info>> {
+        CpiContext::new(
+            self.token_program.to_account_info(),
+            MintTo {
+                mint: self.mint.to_account_info(),
+                to: self.token_account.to_account_info(),
+                authority: self.payer.to_account_info(),
+            },
+        )
+    }
+}
+
+pub fn handler(ctx: Context<MintNFT>, uri: String, title: String, symbol: String) -> Result<()> {
+    
+    token::mint_to(ctx.accounts.mint_to_ctx(), 1)?;
+    
     let account_info = vec![
         ctx.accounts.metadata.to_account_info(),
         ctx.accounts.mint.to_account_info(),

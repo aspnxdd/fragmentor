@@ -1,9 +1,11 @@
+use crate::errors::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 
 use crate::state::*;
+use crate::MAX_FRAGMENTS;
 
-use crate::constants::ANCHOR_DISC;
+use crate::ANCHOR_DISC;
 
 #[derive(Accounts)]
 #[instruction(bump_auth: u8)]
@@ -18,10 +20,9 @@ pub struct Fragment<'info> {
     ],
     bump,
     payer = payer,
-    space = ANCHOR_DISC + WHOLE_NFT_SIZE)]
+    space = ANCHOR_DISC + WholeNft::LEN)]
     pub whole_nft: Account<'info, WholeNft>,
 
-    // @TODO - make authority a from vault
     #[account(init,
     seeds=[
         b"whole_nft_throne",
@@ -73,11 +74,15 @@ pub fn handler(
     original_nft: Pubkey,
     fragmented_nfts: Vec<Pubkey>,
 ) -> Result<()> {
-    ctx.accounts.whole_nft.original_mint = original_nft;
+    if fragmented_nfts.len() > MAX_FRAGMENTS {
+        return Err(error!(ErrorCode::TooManyFragments));
+    }
 
-    ctx.accounts.whole_nft.init_fragments(fragmented_nfts)?;
-    ctx.accounts.whole_nft.vault = ctx.accounts.vault.key();
+    let whole_nft = &mut ctx.accounts.whole_nft;
+    **whole_nft = WholeNft::new(&original_nft, fragmented_nfts, &ctx.accounts.vault.key());
+
     let vault = &*ctx.accounts.vault;
+
     token::transfer(
         ctx.accounts
             .transfer_ctx()
@@ -86,7 +91,7 @@ pub fn handler(
     )?;
 
     let vault = &mut ctx.accounts.vault;
-    vault.boxes += 1;
+    vault.increase_boxes()?;
 
     Ok(())
 }

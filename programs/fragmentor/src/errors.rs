@@ -3,7 +3,6 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 pub enum ErrorCode {
-    // --------------------------------------- generic (0 - 19)
     // 0x1770
     #[msg("Nfts mismatch")]
     NftsMismatch,
@@ -35,6 +34,10 @@ pub enum ErrorCode {
     // 0x1777
     #[msg("All fragments have been destroyed")]
     AllFragmentsDestroyed,
+
+    // 0x1778
+    #[msg("Too many fragments, max 20")]
+    TooManyFragments,
     
 
 }

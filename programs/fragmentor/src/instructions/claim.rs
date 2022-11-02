@@ -101,7 +101,7 @@ pub fn handler(ctx: Context<Claim>) -> Result<()> {
             .with_signer(&[&vault.vault_seeds()]),
     )?;
     let vault = &mut ctx.accounts.vault;
-    vault.boxes -= 1;
+    vault.decrease_boxes()?;
 
     Ok(())
 }
