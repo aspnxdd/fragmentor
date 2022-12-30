@@ -1,29 +1,27 @@
-import type { FC, PropsWithChildren, MouseEvent } from "react";
+import type { FC, PropsWithChildren, MouseEvent } from 'react';
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect } from 'react';
 
-interface IPopup {
+type PopupProps = {
   title?: string;
   show: boolean;
   onClose: () => void;
-}
+};
 
-const Popup: FC<PropsWithChildren<IPopup>> = ({
-  title,
-  show,
-  onClose,
-  children,
-}) => {
+const Popup: FC<PropsWithChildren<PopupProps>> = ({ title, show, onClose, children }) => {
   const backgroundRef = useRef<HTMLDivElement>(null);
 
   const onBackgroundClick = ({ target }: MouseEvent) =>
     target == backgroundRef.current && onClose();
 
   useEffect(() => {
-    document.body.style.overflow = show ? "hidden" : "unset";
+    document.body.style.overflow = show ? 'hidden' : 'unset';
   }, [show]);
 
-  if (!show) return null;
+  if (!show) {
+    return null;
+  }
+
   return (
     <div
       onClick={onBackgroundClick}

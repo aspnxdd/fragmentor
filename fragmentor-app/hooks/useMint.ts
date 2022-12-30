@@ -1,0 +1,28 @@
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { PublicKey, Keypair } from '@solana/web3.js';
+import { buildMintNftIxs } from 'fragmentor';
+import useTransaction from './useTransaction';
+
+const URI = 'https://arweave.net/0m6rZv0Nim4277-wLTPtSTP2NIB_0zvrtTFoHcSeqTo';
+
+export default function useMintNft() {
+  const { connection } = useConnection();
+  const { publicKey } = useWallet();
+  const sendAndConfirmTx = useTransaction();
+
+  // @TODO - mint multiple nft in 1 tx
+  return async function mintNft(): Promise<PublicKey | undefined> {
+    if (!publicKey || !connection) return;
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    const nftKp = Keypair.generate();
+    const ixs = await buildMintNftIxs(connection, publicKey, nftKp.publicKey, 'b', URI, 'symb');
+
+    await sendAndConfirmTx({
+      blockhash,
+      lastValidBlockHeight,
+      ixs,
+      signers: [nftKp],
+    });
+    return nftKp.publicKey;
+  };
+}

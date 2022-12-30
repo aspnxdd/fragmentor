@@ -1,24 +1,9 @@
-import type { FC } from "react";
+import type { FC } from 'react';
 
 const Footer: FC = () => {
   return (
-    <footer
-      className="
-        w-screen
-        fixed
-        bottom-0
-        left-0
-        flex
-        justify-center
-        items-center
-        bg-slate-300
-        gap-2
-        h-10
-        text-lg
-        
-    "
-    >
-      built by{" "}
+    <footer className="w-screen fixed bottom-0 left-0 flex justify-center items-center bg-slate-300 gap-2 h-10 text-lg">
+      built by
       <a
         className="text-cyan-600"
         href="https://twitter.com/ESArnau"

@@ -1,16 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
-import { type FC, useEffect, useMemo, useState } from "react";
+import { type FC, useEffect, useMemo, useState } from 'react';
 
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import Popup from "./Popup";
-import useFetchNfts from "../hooks/useFetchNfts";
-import { MetaplexClient } from "../lib/metaplex";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { useAtomValue } from "jotai";
-import { walletNftsAtom } from "../states";
-import Link from "next/link";
-import Image from "next/image";
-import { trimAddress } from "lib/utils";
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import Popup from './Popup';
+import useFetchNfts from '../hooks/useFetchNfts';
+import { MetaplexClient } from '../lib/metaplex';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useAtomValue } from 'jotai';
+import { walletNftsAtom } from '../states';
+import Link from 'next/link';
+import Image from 'next/image';
+import { trimAddress } from 'lib/utils';
 
 const Navbar: FC = () => {
   const [popupOpen, setPopupOpen] = useState(false);
@@ -18,13 +18,13 @@ const Navbar: FC = () => {
   const { connection } = useConnection();
   const nfts = useAtomValue(walletNftsAtom);
   const { publicKey } = useWallet();
-  const metaplexClient = useMemo(
-    () => new MetaplexClient(connection),
-    [connection]
-  );
+
+  const metaplexClient = useMemo(() => new MetaplexClient(connection), [connection]);
 
   useEffect(() => {
-    if (!publicKey || !metaplexClient) return;
+    if (!publicKey || !metaplexClient) {
+      return;
+    }
     fetchNfts();
   }, [connection, fetchNfts, metaplexClient, publicKey]);
 
@@ -44,24 +44,14 @@ const Navbar: FC = () => {
           Show NFTs
         </button>
 
-        <Popup
-          show={popupOpen}
-          onClose={() => setPopupOpen(false)}
-          title="My NFTs"
-        >
+        <Popup show={popupOpen} onClose={() => setPopupOpen(false)} title="My NFTs">
           <div className="flex flex-wrap mt-10 gap-4">
             {nfts.map((e) => {
               return (
                 <figure key={e.mint.address.toBase58()}>
-                  <img
-                    src={e.json?.image}
-                    alt={e.mint.address.toBase58()}
-                    width="110"
-                  />
+                  <img src={e.json?.image} alt={e.mint.address.toBase58()} width="110" />
                   <figcaption>{e.name}</figcaption>
-                  <figcaption>
-                    {trimAddress(e.mint.address.toBase58())}
-                  </figcaption>
+                  <figcaption>{trimAddress(e.mint.address.toBase58())}</figcaption>
                 </figure>
               );
             })}
@@ -70,9 +60,9 @@ const Navbar: FC = () => {
         <div className="m-4">
           <WalletMultiButton
             style={{
-              backgroundColor: "rgb(8 145 178)",
-              fontFamily: "inherit",
-              marginRight: "1rem",
+              backgroundColor: 'rgb(8 145 178)',
+              fontFamily: 'inherit',
+              marginRight: '1rem',
             }}
           />
         </div>
