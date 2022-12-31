@@ -10,10 +10,12 @@ import { trimAddress } from 'lib/utils';
 import useFragments from 'hooks/useFragments';
 import { useQueryClient } from 'react-query';
 import useFetchNfts from 'hooks/useFetchNfts';
+import { useRouter } from 'next/router';
 
 const MyNftsPopup = lazy(() => import('components/MyNftsPopup'));
 
 const CreateFragment: NextPage = () => {
+  const { query } = useRouter();
   const [popupOpen, setPopupOpen] = useState(false);
   const { connection } = useConnection();
   const { publicKey } = useWallet();
@@ -25,7 +27,7 @@ const CreateFragment: NextPage = () => {
     setFragmentParts,
     setSelectedNft,
     setFragments,
-  } = useFragments();
+  } = useFragments(query.vault);
   const queryClient = useQueryClient();
   const fetchNftsQuery = useFetchNfts();
 
@@ -49,6 +51,13 @@ const CreateFragment: NextPage = () => {
     setSelectedNft(nft.mint.address.toBase58());
     setPopupOpen(false);
     setFragments([]);
+  }
+  
+  function handleCreateFragments() {
+    if (!selectedNft) {
+      return;
+    }
+    createFragments(new PublicKey(selectedNft));
   }
 
   return (
@@ -91,7 +100,7 @@ const CreateFragment: NextPage = () => {
       <button
         className={`w-fit bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800 disabled:bg-gray-500`}
         disabled={!selectedNft}
-        onClick={() => createFragments(new PublicKey(selectedNft!))}
+        onClick={handleCreateFragments}
       >
         {`Create ${fragmentParts} Fragments`}
       </button>

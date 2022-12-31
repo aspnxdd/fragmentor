@@ -2,16 +2,13 @@ import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
 import { FragmentorClient } from 'fragmentor';
-import { getErrorMessage } from 'lib/utils';
-import { useRouter } from 'next/router';
+import { toastProgramErrorMessage } from 'lib/utils';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import useMintNft from './useMint';
 import useTransaction from './useTransaction';
 
-export default function useFragments() {
-  const { query } = useRouter();
-  const vault = query.id;
+export default function useFragments(vault: string | string[] | undefined) {
   const { connection } = useConnection();
   const [selectedNft, setSelectedNft] = useState<string | null>(null);
   const { publicKey, signTransaction } = useWallet();
@@ -73,7 +70,7 @@ export default function useFragments() {
       setSelectedNft(null);
       toast.success('Fragments created');
     } catch (err) {
-      getErrorMessage(err);
+      toastProgramErrorMessage(err);
       console.error(err);
       if (lastToast) {
         toast.dismiss(lastToast);

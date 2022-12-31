@@ -2,10 +2,9 @@ import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, Keypair } from '@solana/web3.js';
 import { IVault, FragmentorClient, FragmentData } from 'fragmentor';
-import { getErrorMessage } from 'lib/utils';
-import { useState, useMemo, useEffect } from 'react';
+import { toastProgramErrorMessage } from 'lib/utils';
+import { useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
-import useFetchNfts from './useFetchNfts';
 import useTransaction from './useTransaction';
 import { useQueryClient } from 'react-query';
 
@@ -41,7 +40,7 @@ export default function useVaults() {
       toast.success('Vault created successfully');
       await fetchVaults();
     } catch (err) {
-      getErrorMessage(err);
+      toastProgramErrorMessage(err);
       console.error(err);
     }
   }
@@ -141,7 +140,7 @@ export default function useVaults() {
       toast.success('NFT unfragmented successfully');
       await fetchFragments();
     } catch (err) {
-      getErrorMessage(err);
+      toastProgramErrorMessage(err);
       if (lastToast) {
         toast.dismiss(lastToast);
       }
@@ -168,7 +167,7 @@ export default function useVaults() {
       await fetchFragments();
       await queryClient.refetchQueries('fetchNfts');
     } catch (err) {
-      getErrorMessage(err);
+      toastProgramErrorMessage(err);
       console.error(err);
     }
   }
