@@ -1,7 +1,8 @@
-import { FC } from 'react';
+import type { Nft } from '@metaplex-foundation/js';
+import type { FC } from 'react';
+
 import NftFigure from './NftFigure';
 import Popup from './Popup';
-import { Nft } from '@metaplex-foundation/js';
 
 type MyNftsPopupProps = {
   popupOpen: boolean;

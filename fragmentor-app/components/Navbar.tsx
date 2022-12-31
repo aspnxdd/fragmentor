@@ -5,28 +5,28 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import useFetchNfts from '../hooks/useFetchNfts';
 import { MetaplexClient } from '../lib/metaplex';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { useAtomValue } from 'jotai';
-import { walletNftsAtom } from '../states';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useQueryClient } from 'react-query';
 
 const MyNftsPopup = lazy(() => import('./MyNftsPopup'));
 
 const Navbar: FC = () => {
   const [popupOpen, setPopupOpen] = useState(false);
-  const fetchNfts = useFetchNfts();
   const { connection } = useConnection();
-  const nfts = useAtomValue(walletNftsAtom);
   const { publicKey } = useWallet();
-
+  const queryClient = useQueryClient();
+  const fetchNftsQuery = useFetchNfts();
   const metaplexClient = useMemo(() => new MetaplexClient(connection), [connection]);
+
+  const nfts = useMemo(() => fetchNftsQuery.data ?? [], [fetchNftsQuery.data]);
 
   useEffect(() => {
     if (!publicKey || !metaplexClient) {
       return;
     }
-    fetchNfts();
-  }, [connection, fetchNfts, metaplexClient, publicKey]);
+    queryClient.refetchQueries('fetchNfts');
+  }, [connection, metaplexClient, publicKey, queryClient]);
 
   return (
     <nav className="w-screen fixed top-0 left-0 flex justify-between items-center bg-slate-300">

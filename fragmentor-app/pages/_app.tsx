@@ -10,6 +10,7 @@ import { Toaster } from 'react-hot-toast';
 import Head from 'next/head';
 import { clusterApiUrl } from '@solana/web3.js';
 import Footer from 'components/Footer';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -18,24 +19,38 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
 
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchInterval: false,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        refetchOnReconnect: false,
+        retry: false,
+      },
+    },
+  });
+
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>
-          <Navbar />
-          <Toaster />
-          <Head>
-            <title>Fragmentor App</title>
-            <meta name="description" content="Fragmentor App" />
-            <link rel="icon" href="/ico.webp" />
-          </Head>
-          <div className="mt-20 flex">
-            <Component {...pageProps} />
-          </div>
-          <Footer />
-        </WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
+    <QueryClientProvider client={queryClient}>
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={wallets} autoConnect>
+          <WalletModalProvider>
+            <Navbar />
+            <Toaster />
+            <Head>
+              <title>Fragmentor App</title>
+              <meta name="description" content="Fragmentor App" />
+              <link rel="icon" href="/ico.webp" />
+            </Head>
+            <div className="mt-20 flex">
+              <Component {...pageProps} />
+            </div>
+            <Footer />
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
+    </QueryClientProvider>
   );
 }
 

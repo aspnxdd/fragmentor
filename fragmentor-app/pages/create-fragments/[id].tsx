@@ -5,21 +5,17 @@ import type { Nft } from '@metaplex-foundation/js';
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
-import { useAtomValue } from 'jotai';
-import useFetchNfts from 'hooks/useFetchNfts';
 import { MetaplexClient } from 'lib/metaplex';
-import { walletNftsAtom } from 'states';
 import { trimAddress } from 'lib/utils';
 import useFragments from 'hooks/useFragments';
-import NftFigure from 'components/NftFigure';
+import { useQueryClient } from 'react-query';
+import useFetchNfts from 'hooks/useFetchNfts';
 
 const MyNftsPopup = lazy(() => import('components/MyNftsPopup'));
 
 const CreateFragment: NextPage = () => {
   const [popupOpen, setPopupOpen] = useState(false);
-  const fetchNfts = useFetchNfts();
   const { connection } = useConnection();
-  const nfts = useAtomValue(walletNftsAtom);
   const { publicKey } = useWallet();
   const {
     createFragments,
@@ -30,6 +26,10 @@ const CreateFragment: NextPage = () => {
     setSelectedNft,
     setFragments,
   } = useFragments();
+  const queryClient = useQueryClient();
+  const fetchNftsQuery = useFetchNfts();
+
+  const nfts = useMemo(() => fetchNftsQuery.data ?? [], [fetchNftsQuery.data]);
 
   const metaplexClient = useMemo(() => new MetaplexClient(connection), [connection]);
 
@@ -37,8 +37,8 @@ const CreateFragment: NextPage = () => {
     if (!publicKey || !metaplexClient) {
       return;
     }
-    fetchNfts();
-  }, [connection, fetchNfts, metaplexClient, publicKey, fragments]);
+    queryClient.refetchQueries('fetchNfts');
+  }, [connection, metaplexClient, publicKey, fragments, queryClient]);
 
   const selectedNftImage = useMemo(
     () => nfts.find((nft) => nft.mint.address.toBase58() === selectedNft)?.json?.image,
