@@ -11,6 +11,8 @@ import { MetaplexClient } from 'lib/metaplex';
 import { walletNftsAtom } from 'states';
 import { trimAddress } from 'lib/utils';
 import useFragments from 'hooks/useFragments';
+import { Nft } from '@metaplex-foundation/js';
+import NftPopup from 'components/NftPopup';
 
 const CreateFragment: NextPage = () => {
   const [popupOpen, setPopupOpen] = useState(false);
@@ -42,6 +44,12 @@ const CreateFragment: NextPage = () => {
     [nfts, selectedNft],
   );
 
+  function handleClickOnNft(nft: Nft) {
+    setSelectedNft(nft.mint.address.toBase58());
+    setPopupOpen(false);
+    setFragments([]);
+  }
+
   return (
     <div className="m-10 flex flex-col gap-4">
       <button
@@ -51,23 +59,14 @@ const CreateFragment: NextPage = () => {
         Select NFT
       </button>
       <Popup show={popupOpen} onClose={() => setPopupOpen(false)} title="My NFTs">
-        <div className="flex flex-wrap gap-4">
-          {nfts.map((nft) => {
-            return (
-              <figure
-                key={nft.mint.address.toBase58()}
-                onClick={() => {
-                  setSelectedNft(nft.mint.address.toBase58());
-                  setPopupOpen(false);
-                  setFragments([]);
-                }}
-              >
-                <img src={nft.json?.image} alt={nft.mint.address.toBase58()} width="110" />
-                <figcaption>{nft.name}</figcaption>
-                <figcaption>{trimAddress(nft.mint.address.toBase58())}</figcaption>
-              </figure>
-            );
-          })}
+        <div className="flex flex-wrap gap-4 p-5">
+          {nfts.map((nft) => (
+            <NftPopup
+              nft={nft}
+              key={nft.mint.address.toBase58()}
+              handleClickOnNft={handleClickOnNft}
+            />
+          ))}
         </div>
       </Popup>
       <form className="flex flex-col w-fit gap-3">

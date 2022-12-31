@@ -1,12 +1,14 @@
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { Keypair, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { Keypair, Transaction, TransactionInstruction } from '@solana/web3.js';
 
-type A = {
+type SendAndConfirmParams = {
   blockhash: string;
   lastValidBlockHeight: number;
   ixs: TransactionInstruction[];
   signers: Keypair[];
 };
+
+const MAX_RETRIES = 3;
 
 export default function useTransaction() {
   const { connection } = useConnection();
@@ -17,7 +19,7 @@ export default function useTransaction() {
     lastValidBlockHeight,
     ixs,
     signers,
-  }: A) {
+  }: SendAndConfirmParams) {
     const tx = new Transaction({
       feePayer: publicKey,
       blockhash,
@@ -27,7 +29,7 @@ export default function useTransaction() {
       tx.sign(...signers);
     }
     const sig = await sendTransaction(tx, connection, {
-      maxRetries: 3,
+      maxRetries: MAX_RETRIES,
     });
 
     await connection.confirmTransaction({

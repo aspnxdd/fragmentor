@@ -11,6 +11,7 @@ import { walletNftsAtom } from '../states';
 import Link from 'next/link';
 import Image from 'next/image';
 import { trimAddress } from 'lib/utils';
+import NftPopup from './NftPopup';
 
 const Navbar: FC = () => {
   const [popupOpen, setPopupOpen] = useState(false);
@@ -46,15 +47,9 @@ const Navbar: FC = () => {
 
         <Popup show={popupOpen} onClose={() => setPopupOpen(false)} title="My NFTs">
           <div className="flex flex-wrap mt-10 gap-4">
-            {nfts.map((e) => {
-              return (
-                <figure key={e.mint.address.toBase58()}>
-                  <img src={e.json?.image} alt={e.mint.address.toBase58()} width="110" />
-                  <figcaption>{e.name}</figcaption>
-                  <figcaption>{trimAddress(e.mint.address.toBase58())}</figcaption>
-                </figure>
-              );
-            })}
+            {nfts.map((nft) => (
+              <NftPopup nft={nft} key={nft.mint.address.toBase58()} />
+            ))}
           </div>
         </Popup>
         <div className="m-4">

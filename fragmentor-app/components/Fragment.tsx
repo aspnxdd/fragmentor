@@ -3,15 +3,21 @@ import type { FragmentData } from 'fragmentor';
 
 import { PublicKey } from '@metaplex-foundation/js';
 
-type Fragments = { originalNft: string; fragments: FragmentData[] };
-
 type FragmentProps = {
-  fragment: Fragments;
+  fragment: { originalNft: string; fragments: FragmentData[] };
   unfragmentNft: (originalNft: PublicKey, fragments: FragmentData[]) => void;
   claimNft: (originalNft: PublicKey) => void;
 };
 
 const Fragment: FC<FragmentProps> = ({ fragment, unfragmentNft, claimNft }) => {
+  function handleUnfragmentNft() {
+    unfragmentNft(new PublicKey(fragment.originalNft), fragment.fragments);
+  }
+
+  function handleClaimNft() {
+    claimNft(new PublicKey(fragment.originalNft));
+  }
+
   return (
     <div
       key={fragment.originalNft}
@@ -22,7 +28,7 @@ const Fragment: FC<FragmentProps> = ({ fragment, unfragmentNft, claimNft }) => {
       </h3>
       <button
         className="bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800"
-        onClick={() => unfragmentNft(new PublicKey(fragment.originalNft), fragment.fragments)}
+        onClick={handleUnfragmentNft}
       >
         Unfragment
       </button>
@@ -36,7 +42,7 @@ const Fragment: FC<FragmentProps> = ({ fragment, unfragmentNft, claimNft }) => {
       })}
       <button
         className="bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800"
-        onClick={() => claimNft(new PublicKey(fragment.originalNft))}
+        onClick={handleClaimNft}
       >
         Claim
       </button>
