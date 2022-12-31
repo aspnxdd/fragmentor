@@ -7,6 +7,7 @@ import { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import useFetchNfts from './useFetchNfts';
 import useTransaction from './useTransaction';
+import { useQueryClient } from 'react-query';
 
 type Fragments = { originalNft: string; fragments: FragmentData[] };
 
@@ -15,9 +16,10 @@ export default function useVaults() {
   const { publicKey, signTransaction } = useWallet();
   const [vaults, setVaults] = useState<(IVault & { address: PublicKey })[]>([]);
   const [selectedVault, setSelectedVault] = useState<PublicKey | null>(null);
-  const fetchNfts = useFetchNfts();
   const [fragments, setFragments] = useState<Fragments[]>([]);
   const sendAndConfirmTx = useTransaction();
+
+  const queryClient = useQueryClient();
 
   const fragmentorClient = useMemo(() => new FragmentorClient(connection), [connection]);
 
@@ -164,7 +166,7 @@ export default function useVaults() {
       toast.success('NFT claimed');
 
       await fetchFragments();
-      await fetchNfts();
+      await queryClient.refetchQueries('fetchNfts');
     } catch (err) {
       getErrorMessage(err);
       console.error(err);
