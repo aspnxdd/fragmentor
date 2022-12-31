@@ -4,19 +4,18 @@ import type { FC } from 'react';
 
 import { trimAddress } from 'lib/utils';
 
-type NftPopupProps = {
+type NftFigureProps = {
   nft: Nft;
   handleClickOnNft?: (nft: Nft) => void;
 };
 
-const NftPopup: FC<NftPopupProps> = ({ handleClickOnNft, nft }) => {
-
+const NftFigure: FC<NftFigureProps> = ({ handleClickOnNft, nft }) => {
   function internalHandleClickOnNfts(nft: Nft) {
     if (handleClickOnNft) {
       handleClickOnNft(nft);
     }
   }
-  
+
   return (
     <figure
       key={nft.mint.address.toBase58()}
@@ -29,4 +28,4 @@ const NftPopup: FC<NftPopupProps> = ({ handleClickOnNft, nft }) => {
   );
 };
 
-export default NftPopup;
+export default NftFigure;

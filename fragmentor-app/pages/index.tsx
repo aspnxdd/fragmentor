@@ -71,7 +71,7 @@ const Home: NextPage = () => {
           <h1 className="text-xl font-bold">Selected vault: {selectedVault?.toBase58()}</h1>
           {selectedVault ? (
             <Link href={`/create-fragments/${selectedVault?.toBase58()}`}>
-              <div className="bg-cyan-600 text-white p-2 px-4 my-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800 w-fit">
+              <div className="bg-cyan-600 cursor-pointer text-white p-2 px-4 my-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800 w-fit">
                 Fragment NFT
               </div>
             </Link>

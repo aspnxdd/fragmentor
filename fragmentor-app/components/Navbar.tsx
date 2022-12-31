@@ -1,8 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
-import { type FC, useEffect, useMemo, useState } from 'react';
+import { type FC, useEffect, useMemo, useState, lazy, Suspense } from 'react';
 
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import Popup from './Popup';
 import useFetchNfts from '../hooks/useFetchNfts';
 import { MetaplexClient } from '../lib/metaplex';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
@@ -10,8 +9,8 @@ import { useAtomValue } from 'jotai';
 import { walletNftsAtom } from '../states';
 import Link from 'next/link';
 import Image from 'next/image';
-import { trimAddress } from 'lib/utils';
-import NftPopup from './NftPopup';
+
+const MyNftsPopup = lazy(() => import('./MyNftsPopup'));
 
 const Navbar: FC = () => {
   const [popupOpen, setPopupOpen] = useState(false);
@@ -44,14 +43,9 @@ const Navbar: FC = () => {
         >
           Show NFTs
         </button>
-
-        <Popup show={popupOpen} onClose={() => setPopupOpen(false)} title="My NFTs">
-          <div className="flex flex-wrap mt-10 gap-4">
-            {nfts.map((nft) => (
-              <NftPopup nft={nft} key={nft.mint.address.toBase58()} />
-            ))}
-          </div>
-        </Popup>
+        <Suspense fallback={<></>}>
+          <MyNftsPopup popupOpen={popupOpen} nfts={nfts} setPopupOpen={setPopupOpen} />
+        </Suspense>
         <div className="m-4">
           <WalletMultiButton
             style={{

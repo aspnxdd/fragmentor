@@ -1,18 +1,19 @@
 /* eslint-disable @next/next/no-img-element */
 import type { NextPage } from 'next';
+import type { Nft } from '@metaplex-foundation/js';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
 import { useAtomValue } from 'jotai';
-import Popup from 'components/Popup';
 import useFetchNfts from 'hooks/useFetchNfts';
 import { MetaplexClient } from 'lib/metaplex';
 import { walletNftsAtom } from 'states';
 import { trimAddress } from 'lib/utils';
 import useFragments from 'hooks/useFragments';
-import { Nft } from '@metaplex-foundation/js';
-import NftPopup from 'components/NftPopup';
+import NftFigure from 'components/NftFigure';
+
+const MyNftsPopup = lazy(() => import('components/MyNftsPopup'));
 
 const CreateFragment: NextPage = () => {
   const [popupOpen, setPopupOpen] = useState(false);
@@ -58,17 +59,14 @@ const CreateFragment: NextPage = () => {
       >
         Select NFT
       </button>
-      <Popup show={popupOpen} onClose={() => setPopupOpen(false)} title="My NFTs">
-        <div className="flex flex-wrap gap-4 p-5">
-          {nfts.map((nft) => (
-            <NftPopup
-              nft={nft}
-              key={nft.mint.address.toBase58()}
-              handleClickOnNft={handleClickOnNft}
-            />
-          ))}
-        </div>
-      </Popup>
+      <Suspense fallback={<></>}>
+        <MyNftsPopup
+          popupOpen={popupOpen}
+          handleClickOnNft={handleClickOnNft}
+          nfts={nfts}
+          setPopupOpen={setPopupOpen}
+        />
+      </Suspense>
       <form className="flex flex-col w-fit gap-3">
         <label>Fragment parts</label>
         <input
