@@ -1,22 +1,12 @@
-use image::{ open, Rgb, ImageBuffer };
+use image::open;
+use utils::{ are_parts_even, are_parts_odd, are_parts_quadratic };
+
+mod utils;
 
 fn main() {
   let img_path = String::from("./1.png");
 
-  fragment_image(img_path, 6);
-}
-
-fn are_parts_odd(number: u32) -> bool {
-  number % 2 != 0
-}
-
-fn are_parts_quadratic(parts: u32) -> bool {
-  let sqrt = (parts as f32).sqrt();
-  sqrt.fract() == 0.0
-}
-
-fn are_parts_even(parts: u32) -> bool {
-  parts % 2 == 0
+  fragment_image(img_path, 3);
 }
 
 fn fragment_image(img_path: String, parts: u32) {
@@ -25,96 +15,57 @@ fn fragment_image(img_path: String, parts: u32) {
   let dyn_img = image::DynamicImage::ImageRgb8(img.clone());
 
   let (width, height) = img.dimensions();
-  let mut fragment_width = 0;
-  let mut fragment_height = 0;
+  let mut fragment_widths = (0, 0);
+  let mut fragment_heights = (0, 0);
 
-  let parts_sqrt = (parts as f32).sqrt() as u32;
+  let parts_sqrt = (parts as f32).sqrt().floor() as u32;
 
   if are_parts_quadratic(parts) {
-    fragment_height = height / parts_sqrt;
-    fragment_width = width / parts_sqrt;
+    fragment_heights.0 = height / parts_sqrt;
+    fragment_heights.1 = fragment_heights.0;
+    fragment_widths.0 = width / parts_sqrt;
+    fragment_widths.1 = fragment_widths.0;
   } else if are_parts_even(parts) {
-    fragment_height = height / parts_sqrt;
-    fragment_width = width / (parts_sqrt + 1);
+    fragment_heights.0 = height / parts_sqrt;
+    fragment_heights.1 = fragment_heights.0;
+    fragment_widths.0 = width / (parts_sqrt + 1);
+    fragment_widths.1 = fragment_widths.0;
+  } else if are_parts_odd(parts) {
+    fragment_heights.0 = height / parts_sqrt;
+    fragment_heights.1 = height / (parts_sqrt + 1);
+    fragment_widths.0 = width / parts_sqrt;
+    fragment_widths.1 = width / (parts_sqrt + 1);
   }
-  // else if are_parts_odd(parts) {
-  //   let w = (parts as f32).sqrt().floor() as u32;
-  //   let c = w + 1;
-  //   println!("w: {} c: {} parts: {}", w, c, parts);
-  //   fragment_height = height / (c / 1);
-  //   fragment_width = width / (w / 1);
-  // }
 
-  let mut imgs: Vec<ImageBuffer<Rgb<u8>, Vec<u8>>> = Vec::new();
+  let mut j = 0;
+  let mut i = 0;
 
-  for i in 0..parts {
-    let mut img = ImageBuffer::new(fragment_width, fragment_height);
-    let mut x = 0;
-    let mut y = 0;
-
-    for x in 0..fragment_width {
-      for y in 0..fragment_height {
-        let pixel = img.get_pixel(x, y);
-        img.put_pixel(x, y, *pixel);
-      }
+  for part in 0..parts {
+    let mut w = fragment_widths.0;
+    let mut h = fragment_heights.0;
+    if part <= parts / 2 {
+      w = fragment_widths.1;
+      h = fragment_heights.1;
     }
 
-    imgs.push(img);
-  }
-
-  let mut img1 = image::RgbImage::new(fragment_width, fragment_height);
-  let mut img2 = image::RgbImage::new(fragment_width, fragment_height);
-  let mut img3 = image::RgbImage::new(fragment_width, fragment_height);
-  let mut img4 = image::RgbImage::new(fragment_width, fragment_height);
-  let mut img5 = image::RgbImage::new(fragment_width, fragment_height);
-  let mut img6 = image::RgbImage::new(fragment_width, fragment_height);
-
-  for x in 0..fragment_width {
-    for y in 0..fragment_height {
-      let pixel = img.get_pixel(x, y);
-      img1.put_pixel(x, y, *pixel);
+    if j * w >= width || i * h >= height {
+      j = 0;
+      i += 1;
+    } else if part == 0 {
+      j = 0;
+    } else {
+      j += 1;
     }
-  }
-
-  for x in fragment_width..fragment_width * 2 {
-    for y in 0..fragment_height {
-      let pixel = img.get_pixel(x, y);
-      img2.put_pixel(x - fragment_width, y, *pixel);
+    if j * w >= width + 5 || j * w >= width - 5 || i * h >= height + 5 || i * h >= height - 5 {
+      j = 0;
+      i += 1;
     }
-  }
 
-  for x in fragment_width * 2..fragment_width * 3 {
-    for y in 0..fragment_height {
-      let pixel = img.get_pixel(x, y);
-      img3.put_pixel(x - fragment_width * 2, y, *pixel);
-    }
-  }
+    println!("w{} - h{} - j{} - i{} - x{} - y{}", w, h, j, i, j * w, i * h);
 
-  for x in 0..fragment_width {
-    for y in fragment_height..fragment_height * 2 {
-      let pixel = img.get_pixel(x, y);
-      img4.put_pixel(x, y - fragment_height, *pixel);
-    }
+    dyn_img
+      .crop_imm(j * w, i * h, w, h)
+      .save(format!("./{}-{}.png", i, j))
+      .unwrap_or_default();
   }
-
-  for x in fragment_width..fragment_width * 2 {
-    for y in fragment_height..fragment_height * 2 {
-      let pixel = img.get_pixel(x, y);
-      img5.put_pixel(x - fragment_width, y - fragment_height, *pixel);
-    }
-  }
-
-  for x in fragment_width * 2..fragment_width * 3 {
-    for y in fragment_height..fragment_height * 2 {
-      let pixel = img.get_pixel(x, y);
-      img6.put_pixel(x - fragment_width * 2, y - fragment_height, *pixel);
-    }
-  }
-
-  img1.save("./1-1.png").unwrap();
-  img2.save("./1-2.png").unwrap();
-  img3.save("./1-3.png").unwrap();
-  img4.save("./1-4.png").unwrap();
-  img5.save("./1-5.png").unwrap();
-  img6.save("./1-6.png").unwrap();
 }
