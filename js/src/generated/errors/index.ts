@@ -49,10 +49,7 @@ export class MintAccsMismatchError extends Error {
 }
 
 createErrorFromCodeLookup.set(0x1771, () => new MintAccsMismatchError())
-createErrorFromNameLookup.set(
-  'MintAccsMismatch',
-  () => new MintAccsMismatchError()
-)
+createErrorFromNameLookup.set('MintAccsMismatch', () => new MintAccsMismatchError())
 
 /**
  * AtaAccsMismatch: 'AtaAccs mismatch'
@@ -72,10 +69,7 @@ export class AtaAccsMismatchError extends Error {
 }
 
 createErrorFromCodeLookup.set(0x1772, () => new AtaAccsMismatchError())
-createErrorFromNameLookup.set(
-  'AtaAccsMismatch',
-  () => new AtaAccsMismatchError()
-)
+createErrorFromNameLookup.set('AtaAccsMismatch', () => new AtaAccsMismatchError())
 
 /**
  * MetadataAccsMismatch: 'MetadataAccs mismatch'
@@ -95,10 +89,7 @@ export class MetadataAccsMismatchError extends Error {
 }
 
 createErrorFromCodeLookup.set(0x1773, () => new MetadataAccsMismatchError())
-createErrorFromNameLookup.set(
-  'MetadataAccsMismatch',
-  () => new MetadataAccsMismatchError()
-)
+createErrorFromNameLookup.set('MetadataAccsMismatch', () => new MetadataAccsMismatchError())
 
 /**
  * EditionAccsMismatch: 'EditionAccs mismatch'
@@ -118,10 +109,7 @@ export class EditionAccsMismatchError extends Error {
 }
 
 createErrorFromCodeLookup.set(0x1774, () => new EditionAccsMismatchError())
-createErrorFromNameLookup.set(
-  'EditionAccsMismatch',
-  () => new EditionAccsMismatchError()
-)
+createErrorFromNameLookup.set('EditionAccsMismatch', () => new EditionAccsMismatchError())
 
 /**
  * UnknownInstruction: 'unknown instruction called'
@@ -141,10 +129,7 @@ export class UnknownInstructionError extends Error {
 }
 
 createErrorFromCodeLookup.set(0x1775, () => new UnknownInstructionError())
-createErrorFromNameLookup.set(
-  'UnknownInstruction',
-  () => new UnknownInstructionError()
-)
+createErrorFromNameLookup.set('UnknownInstruction', () => new UnknownInstructionError())
 
 /**
  * NotAllFragmentsDestroyed: 'Not all fragments have been destroyed'
@@ -164,10 +149,7 @@ export class NotAllFragmentsDestroyedError extends Error {
 }
 
 createErrorFromCodeLookup.set(0x1776, () => new NotAllFragmentsDestroyedError())
-createErrorFromNameLookup.set(
-  'NotAllFragmentsDestroyed',
-  () => new NotAllFragmentsDestroyedError()
-)
+createErrorFromNameLookup.set('NotAllFragmentsDestroyed', () => new NotAllFragmentsDestroyedError())
 
 /**
  * AllFragmentsDestroyed: 'All fragments have been destroyed'
@@ -187,10 +169,27 @@ export class AllFragmentsDestroyedError extends Error {
 }
 
 createErrorFromCodeLookup.set(0x1777, () => new AllFragmentsDestroyedError())
-createErrorFromNameLookup.set(
-  'AllFragmentsDestroyed',
-  () => new AllFragmentsDestroyedError()
-)
+createErrorFromNameLookup.set('AllFragmentsDestroyed', () => new AllFragmentsDestroyedError())
+
+/**
+ * TooManyFragments: 'Too many fragments, max 20'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class TooManyFragmentsError extends Error {
+  readonly code: number = 0x1778
+  readonly name: string = 'TooManyFragments'
+  constructor() {
+    super('Too many fragments, max 20')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, TooManyFragmentsError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1778, () => new TooManyFragmentsError())
+createErrorFromNameLookup.set('TooManyFragments', () => new TooManyFragmentsError())
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

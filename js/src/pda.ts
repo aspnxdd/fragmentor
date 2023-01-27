@@ -1,14 +1,14 @@
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey } from '@solana/web3.js'
 
-const PROGRAM = new PublicKey("FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh");
-type PDA = [PublicKey, number];
+const PROGRAM = new PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh')
+type PDA = [PublicKey, number]
 export function getWholeNftPda(mintKey: PublicKey, vault: PublicKey): PDA {
   const [wholeNftPDA, wholeNftPDABump] = PublicKey.findProgramAddressSync(
-    [Buffer.from("whole_nft"), mintKey.toBytes(), vault.toBytes()],
-    PROGRAM
-  );
+    [Buffer.from('whole_nft'), mintKey.toBytes(), vault.toBytes()],
+    PROGRAM,
+  )
 
-  return [wholeNftPDA, wholeNftPDABump];
+  return [wholeNftPDA, wholeNftPDABump]
 }
 
 // vault auth that will manage tokens in n out
@@ -16,47 +16,39 @@ export function getWholeNftPda(mintKey: PublicKey, vault: PublicKey): PDA {
 export function getVaultAuthPda(vault: PublicKey): PDA {
   const [vaultAuthPDA, vaultAuthPDABump] = PublicKey.findProgramAddressSync(
     [Buffer.from(vault.toBytes())],
-    PROGRAM
-  );
+    PROGRAM,
+  )
 
-  return [vaultAuthPDA, vaultAuthPDABump];
+  return [vaultAuthPDA, vaultAuthPDABump]
 }
 
 // token account holding the original nft
-export function getWholeNftThronePda(
-  mintKey: PublicKey,
-  vault: PublicKey
-): PDA {
-  const [wholeNftThronePDA, wholeNftThronePDABump] =
-    PublicKey.findProgramAddressSync(
-      [Buffer.from("whole_nft_throne"), mintKey.toBytes(), vault.toBytes()],
-      PROGRAM
-    );
-  return [wholeNftThronePDA, wholeNftThronePDABump];
+export function getWholeNftThronePda(mintKey: PublicKey, vault: PublicKey): PDA {
+  const [wholeNftThronePDA, wholeNftThronePDABump] = PublicKey.findProgramAddressSync(
+    [Buffer.from('whole_nft_throne'), mintKey.toBytes(), vault.toBytes()],
+    PROGRAM,
+  )
+  return [wholeNftThronePDA, wholeNftThronePDABump]
 }
 export const TOKEN_METADATA_PROGRAM_ID = new PublicKey(
-  "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
-);
+  'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
+)
 
 export const getMetadata = (mint: PublicKey): PublicKey => {
   return PublicKey.findProgramAddressSync(
-    [
-      Buffer.from("metadata"),
-      TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-      mint.toBuffer(),
-    ],
-    TOKEN_METADATA_PROGRAM_ID
-  )[0];
-};
+    [Buffer.from('metadata'), TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+    TOKEN_METADATA_PROGRAM_ID,
+  )[0]
+}
 
 export const getMasterEdition = (mint: PublicKey): PublicKey => {
   return PublicKey.findProgramAddressSync(
     [
-      Buffer.from("metadata"),
+      Buffer.from('metadata'),
       TOKEN_METADATA_PROGRAM_ID.toBuffer(),
       mint.toBuffer(),
-      Buffer.from("edition"),
+      Buffer.from('edition'),
     ],
-    TOKEN_METADATA_PROGRAM_ID
-  )[0];
-};
+    TOKEN_METADATA_PROGRAM_ID,
+  )[0]
+}

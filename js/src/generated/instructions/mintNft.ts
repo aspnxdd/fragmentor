@@ -35,7 +35,7 @@ export const mintNftStruct = new beet.FixableBeetArgsStruct<
     ['title', beet.utf8String],
     ['symbol', beet.utf8String],
   ],
-  'MintNftInstructionArgs'
+  'MintNftInstructionArgs',
 )
 /**
  * Accounts required by the _mintNft_ instruction
@@ -65,9 +65,7 @@ export type MintNftInstructionAccounts = {
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const mintNftInstructionDiscriminator = [
-  211, 57, 6, 167, 15, 219, 35, 251,
-]
+export const mintNftInstructionDiscriminator = [211, 57, 6, 167, 15, 219, 35, 251]
 
 /**
  * Creates a _MintNft_ instruction.
@@ -82,7 +80,7 @@ export const mintNftInstructionDiscriminator = [
 export function createMintNftInstruction(
   accounts: MintNftInstructionAccounts,
   args: MintNftInstructionArgs,
-  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh')
+  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh'),
 ) {
   const [data] = mintNftStruct.serialize({
     instructionDiscriminator: mintNftInstructionDiscriminator,

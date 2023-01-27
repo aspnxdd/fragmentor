@@ -17,7 +17,7 @@ export const initVaultStruct = new beet.BeetArgsStruct<{
   instructionDiscriminator: number[] /* size: 8 */
 }>(
   [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
-  'InitVaultInstructionArgs'
+  'InitVaultInstructionArgs',
 )
 /**
  * Accounts required by the _initVault_ instruction
@@ -37,9 +37,7 @@ export type InitVaultInstructionAccounts = {
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const initVaultInstructionDiscriminator = [
-  77, 79, 85, 150, 33, 217, 52, 106,
-]
+export const initVaultInstructionDiscriminator = [77, 79, 85, 150, 33, 217, 52, 106]
 
 /**
  * Creates a _InitVault_ instruction.
@@ -51,7 +49,7 @@ export const initVaultInstructionDiscriminator = [
  */
 export function createInitVaultInstruction(
   accounts: InitVaultInstructionAccounts,
-  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh')
+  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh'),
 ) {
   const [data] = initVaultStruct.serialize({
     instructionDiscriminator: initVaultInstructionDiscriminator,

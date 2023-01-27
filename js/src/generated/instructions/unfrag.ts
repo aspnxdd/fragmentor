@@ -34,7 +34,7 @@ export const unfragStruct = new beet.FixableBeetArgsStruct<
     ['bumpAuth', beet.u8],
     ['fragmentedNfts', beet.array(beetSolana.publicKey)],
   ],
-  'UnfragInstructionArgs'
+  'UnfragInstructionArgs',
 )
 /**
  * Accounts required by the _unfrag_ instruction
@@ -62,9 +62,7 @@ export type UnfragInstructionAccounts = {
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const unfragInstructionDiscriminator = [
-  177, 117, 133, 47, 115, 51, 161, 162,
-]
+export const unfragInstructionDiscriminator = [177, 117, 133, 47, 115, 51, 161, 162]
 
 /**
  * Creates a _Unfrag_ instruction.
@@ -79,7 +77,7 @@ export const unfragInstructionDiscriminator = [
 export function createUnfragInstruction(
   accounts: UnfragInstructionAccounts,
   args: UnfragInstructionArgs,
-  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh')
+  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh'),
 ) {
   const [data] = unfragStruct.serialize({
     instructionDiscriminator: unfragInstructionDiscriminator,

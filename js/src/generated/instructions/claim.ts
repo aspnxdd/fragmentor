@@ -35,7 +35,7 @@ export const claimStruct = new beet.BeetArgsStruct<
     ['bumpWholeNft', beet.u8],
     ['bumpWholeNftThrone', beet.u8],
   ],
-  'ClaimInstructionArgs'
+  'ClaimInstructionArgs',
 )
 /**
  * Accounts required by the _claim_ instruction
@@ -67,9 +67,7 @@ export type ClaimInstructionAccounts = {
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const claimInstructionDiscriminator = [
-  62, 198, 214, 193, 213, 159, 108, 210,
-]
+export const claimInstructionDiscriminator = [62, 198, 214, 193, 213, 159, 108, 210]
 
 /**
  * Creates a _Claim_ instruction.
@@ -84,7 +82,7 @@ export const claimInstructionDiscriminator = [
 export function createClaimInstruction(
   accounts: ClaimInstructionAccounts,
   args: ClaimInstructionArgs,
-  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh')
+  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh'),
 ) {
   const [data] = claimStruct.serialize({
     instructionDiscriminator: claimInstructionDiscriminator,

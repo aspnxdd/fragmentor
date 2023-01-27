@@ -36,7 +36,7 @@ export const fragmentStruct = new beet.FixableBeetArgsStruct<
     ['originalNft', beetSolana.publicKey],
     ['fragmentedNfts', beet.array(beetSolana.publicKey)],
   ],
-  'FragmentInstructionArgs'
+  'FragmentInstructionArgs',
 )
 /**
  * Accounts required by the _fragment_ instruction
@@ -68,9 +68,7 @@ export type FragmentInstructionAccounts = {
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const fragmentInstructionDiscriminator = [
-  25, 28, 9, 210, 74, 147, 62, 222,
-]
+export const fragmentInstructionDiscriminator = [25, 28, 9, 210, 74, 147, 62, 222]
 
 /**
  * Creates a _Fragment_ instruction.
@@ -85,7 +83,7 @@ export const fragmentInstructionDiscriminator = [
 export function createFragmentInstruction(
   accounts: FragmentInstructionAccounts,
   args: FragmentInstructionArgs,
-  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh')
+  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh'),
 ) {
   const [data] = fragmentStruct.serialize({
     instructionDiscriminator: fragmentInstructionDiscriminator,

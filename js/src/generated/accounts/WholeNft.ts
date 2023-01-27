@@ -33,7 +33,7 @@ export class WholeNft implements WholeNftArgs {
   private constructor(
     readonly vault: web3.PublicKey,
     readonly originalMint: web3.PublicKey,
-    readonly fragments: FragmentData[]
+    readonly fragments: FragmentData[],
   ) {}
 
   /**
@@ -47,10 +47,7 @@ export class WholeNft implements WholeNftArgs {
    * Deserializes the {@link WholeNft} from the data of the provided {@link web3.AccountInfo}.
    * @returns a tuple of the account data and the offset up to which the buffer was read to obtain it.
    */
-  static fromAccountInfo(
-    accountInfo: web3.AccountInfo<Buffer>,
-    offset = 0
-  ): [WholeNft, number] {
+  static fromAccountInfo(accountInfo: web3.AccountInfo<Buffer>, offset = 0): [WholeNft, number] {
     return WholeNft.deserialize(accountInfo.data, offset)
   }
 
@@ -63,12 +60,9 @@ export class WholeNft implements WholeNftArgs {
   static async fromAccountAddress(
     connection: web3.Connection,
     address: web3.PublicKey,
-    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
+    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig,
   ): Promise<WholeNft> {
-    const accountInfo = await connection.getAccountInfo(
-      address,
-      commitmentOrConfig
-    )
+    const accountInfo = await connection.getAccountInfo(address, commitmentOrConfig)
     if (accountInfo == null) {
       throw new Error(`Unable to find WholeNft account at ${address}`)
     }
@@ -82,9 +76,7 @@ export class WholeNft implements WholeNftArgs {
    * @param programId - the program that owns the accounts we are filtering
    */
   static gpaBuilder(
-    programId: web3.PublicKey = new web3.PublicKey(
-      'FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh'
-    )
+    programId: web3.PublicKey = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh'),
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, wholeNftBeet)
   }
@@ -134,12 +126,9 @@ export class WholeNft implements WholeNftArgs {
   static async getMinimumBalanceForRentExemption(
     args: WholeNftArgs,
     connection: web3.Connection,
-    commitment?: web3.Commitment
+    commitment?: web3.Commitment,
   ): Promise<number> {
-    return connection.getMinimumBalanceForRentExemption(
-      WholeNft.byteSize(args),
-      commitment
-    )
+    return connection.getMinimumBalanceForRentExemption(WholeNft.byteSize(args), commitment)
   }
 
   /**
@@ -172,5 +161,5 @@ export const wholeNftBeet = new beet.FixableBeetStruct<
     ['fragments', beet.array(fragmentDataBeet)],
   ],
   WholeNft.fromArgs,
-  'WholeNft'
+  'WholeNft',
 )

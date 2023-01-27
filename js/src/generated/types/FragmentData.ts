@@ -22,5 +22,5 @@ export const fragmentDataBeet = new beet.BeetArgsStruct<FragmentData>(
     ['mint', beetSolana.publicKey],
     ['isBurned', beet.bool],
   ],
-  'FragmentData'
+  'FragmentData',
 )

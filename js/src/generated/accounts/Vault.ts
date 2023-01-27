@@ -36,7 +36,7 @@ export class Vault implements VaultArgs {
     readonly authority: web3.PublicKey,
     readonly authoritySeed: web3.PublicKey,
     readonly authorityBumpSeed: number[] /* size: 1 */,
-    readonly boxes: beet.bignum
+    readonly boxes: beet.bignum,
   ) {}
 
   /**
@@ -48,7 +48,7 @@ export class Vault implements VaultArgs {
       args.authority,
       args.authoritySeed,
       args.authorityBumpSeed,
-      args.boxes
+      args.boxes,
     )
   }
 
@@ -56,10 +56,7 @@ export class Vault implements VaultArgs {
    * Deserializes the {@link Vault} from the data of the provided {@link web3.AccountInfo}.
    * @returns a tuple of the account data and the offset up to which the buffer was read to obtain it.
    */
-  static fromAccountInfo(
-    accountInfo: web3.AccountInfo<Buffer>,
-    offset = 0
-  ): [Vault, number] {
+  static fromAccountInfo(accountInfo: web3.AccountInfo<Buffer>, offset = 0): [Vault, number] {
     return Vault.deserialize(accountInfo.data, offset)
   }
 
@@ -72,12 +69,9 @@ export class Vault implements VaultArgs {
   static async fromAccountAddress(
     connection: web3.Connection,
     address: web3.PublicKey,
-    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
+    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig,
   ): Promise<Vault> {
-    const accountInfo = await connection.getAccountInfo(
-      address,
-      commitmentOrConfig
-    )
+    const accountInfo = await connection.getAccountInfo(address, commitmentOrConfig)
     if (accountInfo == null) {
       throw new Error(`Unable to find Vault account at ${address}`)
     }
@@ -91,9 +85,7 @@ export class Vault implements VaultArgs {
    * @param programId - the program that owns the accounts we are filtering
    */
   static gpaBuilder(
-    programId: web3.PublicKey = new web3.PublicKey(
-      'FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh'
-    )
+    programId: web3.PublicKey = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh'),
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, vaultBeet)
   }
@@ -133,12 +125,9 @@ export class Vault implements VaultArgs {
    */
   static async getMinimumBalanceForRentExemption(
     connection: web3.Connection,
-    commitment?: web3.Commitment
+    commitment?: web3.Commitment,
   ): Promise<number> {
-    return connection.getMinimumBalanceForRentExemption(
-      Vault.byteSize,
-      commitment
-    )
+    return connection.getMinimumBalanceForRentExemption(Vault.byteSize, commitment)
   }
 
   /**
@@ -193,5 +182,5 @@ export const vaultBeet = new beet.BeetStruct<
     ['boxes', beet.u64],
   ],
   Vault.fromArgs,
-  'Vault'
+  'Vault',
 )
