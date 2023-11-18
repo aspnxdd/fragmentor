@@ -1,7 +1,7 @@
 [features]
 seeds = false
 [programs.localnet]
-fragmentor = "FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh"
+fragmentor = "9SPvLNP6TAW4ZCtST8pmCCrKYt2gctRedmq1eWAu2Cwz"
 
 [programs.devnet]
 fragmentor = "FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh"
@@ -14,4 +14,4 @@ cluster = "localnet"
 wallet = "wallet.json"
 
 [scripts]
-test = "pnpm ts-mocha -p ./tsconfig.json -t 1000000 js/tests/**/*.test.ts"
+test = "pnpm vitest"

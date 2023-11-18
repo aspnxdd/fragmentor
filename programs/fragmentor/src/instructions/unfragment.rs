@@ -5,10 +5,7 @@ use anchor_spl::{
     associated_token::get_associated_token_address,
     token::{Token, TokenAccount},
 };
-use mpl_token_metadata::{
-    instruction::burn_nft,
-    pda::{find_master_edition_account, find_metadata_account},
-};
+use mpl_token_metadata::{accounts::MasterEdition, accounts::Metadata, instructions::BurnNft};
 #[derive(Accounts)]
 #[instruction(bump_auth: u8)]
 pub struct Unfragment<'info> {
@@ -143,8 +140,9 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     for fragmented_nft in &fragmented_nfts {
         let fragment = fragmented_nft.clone();
         let ata = get_associated_token_address(&owner.key(), &fragmented_nft.key());
-        let (metadata, _) = find_metadata_account(&fragmented_nft.key());
-        let (edition, _) = find_master_edition_account(&fragmented_nft.key());
+
+        let (metadata, _) = Metadata::find_pda(&fragmented_nft.key());
+        let (edition, _) = MasterEdition::find_pda(&fragmented_nft.key());
 
         let mint_acc = mint_accs
             .iter()
@@ -187,19 +185,16 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
             mint_acc.unwrap().to_account_info(),
             ata_acc.unwrap().to_account_info(),
         ];
-        invoke(
-            &burn_nft(
-                ctx.accounts.token_metadata_program.key(),
-                metadata,
-                owner,
-                fragment,
-                ata,
-                edition,
-                ctx.accounts.token_program.key(),
-                None,
-            ),
-            &accs[..],
-        )?;
+        let m = BurnNft {
+            collection_metadata: None,
+            master_edition_account: (edition_acc.unwrap().key()),
+            metadata,
+            mint: fragment,
+            owner,
+            spl_token_program: ctx.accounts.token_program.key(),
+            token_account: ata,
+        };
+        invoke(&m.instruction(), &accs[..])?;
 
         let whole_nft = &mut *ctx.accounts.whole_nft;
 

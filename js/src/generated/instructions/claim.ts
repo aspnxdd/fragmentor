@@ -82,7 +82,7 @@ export const claimInstructionDiscriminator = [62, 198, 214, 193, 213, 159, 108, 
 export function createClaimInstruction(
   accounts: ClaimInstructionAccounts,
   args: ClaimInstructionArgs,
-  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh'),
+  programId = new web3.PublicKey('9SPvLNP6TAW4ZCtST8pmCCrKYt2gctRedmq1eWAu2Cwz'),
 ) {
   const [data] = claimStruct.serialize({
     instructionDiscriminator: claimInstructionDiscriminator,

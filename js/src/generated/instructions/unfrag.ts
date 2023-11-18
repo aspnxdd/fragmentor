@@ -77,7 +77,7 @@ export const unfragInstructionDiscriminator = [177, 117, 133, 47, 115, 51, 161, 
 export function createUnfragInstruction(
   accounts: UnfragInstructionAccounts,
   args: UnfragInstructionArgs,
-  programId = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh'),
+  programId = new web3.PublicKey('9SPvLNP6TAW4ZCtST8pmCCrKYt2gctRedmq1eWAu2Cwz'),
 ) {
   const [data] = unfragStruct.serialize({
     instructionDiscriminator: unfragInstructionDiscriminator,

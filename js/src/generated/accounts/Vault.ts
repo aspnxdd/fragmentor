@@ -85,7 +85,7 @@ export class Vault implements VaultArgs {
    * @param programId - the program that owns the accounts we are filtering
    */
   static gpaBuilder(
-    programId: web3.PublicKey = new web3.PublicKey('FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh'),
+    programId: web3.PublicKey = new web3.PublicKey('9SPvLNP6TAW4ZCtST8pmCCrKYt2gctRedmq1eWAu2Cwz'),
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, vaultBeet)
   }

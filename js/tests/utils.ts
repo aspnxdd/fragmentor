@@ -13,17 +13,16 @@ import {
   MintNftInstructionAccounts,
   createMintNftInstruction,
 } from '../src/generated/instructions/mintNft'
+import path from 'path'
 
 export const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
   'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
 )
 
 export const getMetadata = async (mint: anchor.web3.PublicKey): Promise<anchor.web3.PublicKey> => {
-  return (
-    await anchor.web3.PublicKey.findProgramAddress(
-      [Buffer.from('metadata'), TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer()],
-      TOKEN_METADATA_PROGRAM_ID,
-    )
+  return anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from('metadata'), TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+    TOKEN_METADATA_PROGRAM_ID,
   )[0]
 }
 
@@ -42,6 +41,9 @@ export const getMasterEdition = async (
     )
   )[0]
 }
+
+process.env.ANCHOR_PROVIDER_URL = 'http://localhost:8899'
+process.env.ANCHOR_WALLET = path.join(process.cwd() + '/..' + '/wallet.json')
 
 anchor.setProvider(anchor.AnchorProvider.env())
 export const provider = anchor.getProvider()

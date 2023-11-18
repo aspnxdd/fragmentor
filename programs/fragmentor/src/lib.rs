@@ -5,7 +5,7 @@ mod errors;
 mod instructions;
 mod state;
 
-declare_id!("FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh");
+declare_id!("9SPvLNP6TAW4ZCtST8pmCCrKYt2gctRedmq1eWAu2Cwz");
 
 #[constant]
 pub const ANCHOR_DISC: usize = 8;
