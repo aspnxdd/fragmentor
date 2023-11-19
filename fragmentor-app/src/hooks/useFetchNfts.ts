@@ -22,5 +22,5 @@ export default function useFetchNfts() {
     },
   )
 
-  return fetchNftsQuery
+  return { fetchNftsQuery }
 }

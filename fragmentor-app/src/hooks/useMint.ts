@@ -14,10 +14,10 @@ const NFT_PARAMS = {
 export default function useMintNft() {
   const { connection } = useConnection()
   const { publicKey } = useWallet()
-  const sendAndConfirmTx = useTransaction()
+  const { sendAndConfirmTx } = useTransaction()
 
   // @TODO - mint multiple nft in 1 tx
-  return async function mintNft(): Promise<PublicKey | undefined> {
+  async function mintNft(): Promise<PublicKey | undefined> {
     if (!publicKey || !connection) {
       return
     }
@@ -40,4 +40,6 @@ export default function useMintNft() {
     })
     return nftKp.publicKey
   }
+
+  return { mintNft }
 }

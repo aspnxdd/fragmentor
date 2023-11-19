@@ -1,3 +1,4 @@
+'use client'
 import type { Nft } from '@metaplex-foundation/js';
 import type { FC } from 'react';
 
@@ -14,7 +15,7 @@ type MyNftsPopupProps = {
 const MyNftsPopup: FC<MyNftsPopupProps> = ({ nfts, popupOpen, setPopupOpen, handleClickOnNft }) => {
   return (
     <Popup show={popupOpen} onClose={() => setPopupOpen(false)} title="My NFTs">
-      <div className="flex flex-wrap mt-10 gap-4">
+      <div className="flex flex-wrap mt-10 gap-4 items-center justify-evenly">
         {nfts.map((nft) => (
           <NftFigure
             nft={nft}

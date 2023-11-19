@@ -1,24 +1,21 @@
 /* eslint-disable @next/next/no-img-element */
-import type { NextPage } from 'next';
-import type { Nft } from '@metaplex-foundation/js';
+'use client'
+import type { NextPage } from 'next'
+import type { Nft } from '@metaplex-foundation/js'
 
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey } from '@solana/web3.js';
-import { MetaplexClient } from 'lib/metaplex';
-import { trimAddress } from 'lib/utils';
-import useFragments from 'hooks/useFragments';
-import { useQueryClient } from 'react-query';
-import useFetchNfts from 'hooks/useFetchNfts';
-import { useRouter } from 'next/router';
+import { Suspense, useMemo, useState } from 'react'
+import { PublicKey } from '@solana/web3.js'
+import { useParams } from 'next/navigation'
+import { trimAddress } from '../../../lib/utils'
+import useFragments from '../../../hooks/useFragments'
+import useFetchNfts from '../../../hooks/useFetchNfts'
+import dynamic from 'next/dynamic'
 
-const MyNftsPopup = lazy(() => import('components/MyNftsPopup'));
+const MyNftsPopup = dynamic(() => import('../../../components/MyNftsPopup'))
 
 const CreateFragment: NextPage = () => {
-  const { query } = useRouter();
-  const [popupOpen, setPopupOpen] = useState(false);
-  const { connection } = useConnection();
-  const { publicKey } = useWallet();
+  const { vault } = useParams()
+  const [popupOpen, setPopupOpen] = useState(false)
   const {
     createFragments,
     fragmentParts,
@@ -27,43 +24,36 @@ const CreateFragment: NextPage = () => {
     setFragmentParts,
     setSelectedNft,
     setFragments,
-  } = useFragments(query.vault);
-  const queryClient = useQueryClient();
-  const fetchNftsQuery = useFetchNfts();
+  } = useFragments(Array.isArray(vault) ? vault[0] : vault)
+  const { fetchNftsQuery } = useFetchNfts()
 
-  const nfts = useMemo(() => fetchNftsQuery.data ?? [], [fetchNftsQuery.data]);
-
-  const metaplexClient = useMemo(() => new MetaplexClient(connection), [connection]);
-
-  useEffect(() => {
-    if (!publicKey || !metaplexClient) {
-      return;
-    }
-    queryClient.refetchQueries('fetchNfts');
-  }, [connection, metaplexClient, publicKey, fragments, queryClient]);
+  const nfts = fetchNftsQuery.data ?? []
 
   const selectedNftImage = useMemo(
     () => nfts.find((nft) => nft.mint.address.toBase58() === selectedNft)?.json?.image,
     [nfts, selectedNft],
-  );
+  )
 
   function handleClickOnNft(nft: Nft) {
-    setSelectedNft(nft.mint.address.toBase58());
-    setPopupOpen(false);
-    setFragments([]);
+    setSelectedNft(nft.mint.address.toBase58())
+    setPopupOpen(false)
+    setFragments([])
   }
-  
-  function handleCreateFragments() {
+
+  async function handleCreateFragments() {
     if (!selectedNft) {
-      return;
+      return
     }
-    createFragments(new PublicKey(selectedNft));
+    await createFragments(new PublicKey(selectedNft))
+    setFragments([])
+    setSelectedNft(null)
+    await fetchNftsQuery.refetch()
   }
 
   return (
-    <div className="m-10 flex flex-col gap-4">
+    <div className="m-10 flex flex-col gap-4 mt-24">
       <button
-        className="w-fit bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800"
+        className="w-fit bg-teal-600 text-white p-2 px-4 border-0 font-semibold  rounded-lg transition-colors duration-100 ease-in-out hover:bg-teal-800"
         onClick={() => setPopupOpen(true)}
       >
         Select NFT
@@ -77,7 +67,7 @@ const CreateFragment: NextPage = () => {
         />
       </Suspense>
       <form className="flex flex-col w-fit gap-3">
-        <label>Fragment parts</label>
+        <label>Fragment Parts</label>
         <input
           type="number"
           placeholder="4"
@@ -98,7 +88,7 @@ const CreateFragment: NextPage = () => {
         </>
       ) : null}
       <button
-        className={`w-fit bg-cyan-600 text-white p-2 px-4 border-0 font-semibold text-lg rounded-lg transition-colors duration-100 ease-in-out hover:bg-cyan-800 disabled:bg-gray-500`}
+        className="w-fit bg-teal-600 text-white p-2 px-4 border-0 font-semibold  rounded-lg transition-colors duration-100 ease-in-out hover:bg-teal-800 disabled:bg-gray-500"
         disabled={!selectedNft}
         onClick={handleCreateFragments}
       >
@@ -110,19 +100,19 @@ const CreateFragment: NextPage = () => {
           <div className="flex flex-wrap gap-4">
             {fragments.map((fragment) => {
               const fragmentImage = nfts.find((e) => e.mint.address.toBase58() === fragment)?.json
-                ?.image;
+                ?.image
               return (
                 <figure key={fragment}>
                   <img src={fragmentImage} alt={fragment} width="110" />
                   <figcaption>{trimAddress(fragment)}</figcaption>
                 </figure>
-              );
+              )
             })}
           </div>
         </div>
       ) : null}
     </div>
-  );
-};
+  )
+}
 
-export default CreateFragment;
+export default CreateFragment

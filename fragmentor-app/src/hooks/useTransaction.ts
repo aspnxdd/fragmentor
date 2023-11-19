@@ -45,5 +45,5 @@ export default function useTransaction() {
     }
   }
 
-  return sendAndConfirmTx
+  return { sendAndConfirmTx }
 }
