@@ -9,5 +9,14 @@
     "compile": "pnpm --filter fragmentor run compile",
     "vitest": "pnpm --filter fragmentor run vitest"
   },
+  "dependencies": {
+    "@metaplex-foundation/amman": "0.12.1",
+    "@metaplex-foundation/amman-client": "0.2.4"
+  },
+  "devDependencies": {
+    "@metaplex-foundation/solita": "0.20.0",
+    "prettier": "2.8.8",
+    "typescript": "5.2.2"
+  },
   "private": true
 }

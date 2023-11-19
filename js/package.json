@@ -14,8 +14,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@metaplex-foundation/amman": "0.12.1",
-    "@metaplex-foundation/amman-client": "0.2.4",
     "@metaplex-foundation/beet": "0.7.1",
     "@metaplex-foundation/beet-solana": "0.4.0",
     "@project-serum/anchor": "0.26.0",
@@ -23,9 +21,7 @@
     "@solana/web3.js": "1.64.0"
   },
   "devDependencies": {
-    "@metaplex-foundation/solita": "0.20.0",
     "@types/bn.js": "5.1.5",
-    "prettier": "3.1.0",
     "tsup": "8.0.0",
     "typescript": "5.2.2",
     "vitest": "0.34.6"
