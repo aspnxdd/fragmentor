@@ -36,7 +36,10 @@ import {
   createInitVaultInstruction,
   InitVaultInstructionAccounts,
 } from './generated/instructions/initVault'
-import { createUnfragInstruction, UnfragInstructionAccounts } from './generated/instructions/unfrag'
+import {
+  createUnfragmentInstruction,
+  UnfragmentInstructionAccounts,
+} from './generated/instructions/unfragment'
 import { MintNftInstructionAccounts, createMintNftInstruction } from './generated'
 
 type Replace<T, U extends PropertyKey, V> = Omit<T, U> & {
@@ -161,20 +164,20 @@ export class FragmentorClient {
       })
     }
 
-    const unfragAccs: UnfragInstructionAccounts = {
+    const unfragAccs: UnfragmentInstructionAccounts = {
       tokenProgram: TOKEN_PROGRAM_ID,
       payer: owner,
       systemProgram: SystemProgram.programId,
       rent: SYSVAR_RENT_PUBKEY,
       wholeNftThrone: wholeNftThronePDA,
       authority: vaultAuthPDA,
-      vault: vault,
+      vault,
       wholeNft: wholeNftPDA,
       tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
       anchorRemainingAccounts: remainingAccounts,
     }
 
-    return createUnfragInstruction(unfragAccs, {
+    return createUnfragmentInstruction(unfragAccs, {
       bumpAuth: vaultAuthPDABump,
       fragmentedNfts: [...fragmentsMints],
     })
@@ -205,7 +208,7 @@ export class FragmentorClient {
       rent: SYSVAR_RENT_PUBKEY,
       wholeNftThrone: wholeNftThronePDA,
       authority: vaultAuthPDA,
-      vault: vault,
+      vault,
       wholeNft: wholeNftPDA,
       mint: mintToClaim,
       mintDestAcc,

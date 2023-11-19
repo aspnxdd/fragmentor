@@ -6,6 +6,7 @@ use anchor_spl::{
     token::{Token, TokenAccount},
 };
 use mpl_token_metadata::{accounts::MasterEdition, accounts::Metadata, instructions::BurnNft};
+
 #[derive(Accounts)]
 #[instruction(bump_auth: u8)]
 pub struct Unfragment<'info> {
@@ -185,7 +186,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
             mint_acc.unwrap().to_account_info(),
             ata_acc.unwrap().to_account_info(),
         ];
-        let m = BurnNft {
+        let burn_nft = BurnNft {
             collection_metadata: None,
             master_edition_account: (edition_acc.unwrap().key()),
             metadata,
@@ -194,7 +195,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
             spl_token_program: ctx.accounts.token_program.key(),
             token_account: ata,
         };
-        invoke(&m.instruction(), &accs[..])?;
+        invoke(&burn_nft.instruction(), &accs[..])?;
 
         let whole_nft = &mut *ctx.accounts.whole_nft;
 

@@ -45,15 +45,12 @@ impl WholeNft {
     }
 
     fn init_fragments(nfts: Vec<Pubkey>) -> Vec<FragmentData> {
-        let mut fragments = vec![];
-        for nft in nfts {
-            fragments.push(FragmentData {
+        nfts.iter().map(|nft| {
+            return FragmentData {
                 mint: nft.key(),
                 is_burned: false,
-            });
-        }
-
-        fragments
+            };
+        }).collect()    
     }
 
     pub fn new(original_mint: &Pubkey, fragmented_nfts: Vec<Pubkey>, vault: &Pubkey) -> Self {

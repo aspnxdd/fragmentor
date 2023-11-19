@@ -61,18 +61,20 @@ pub fn handler(ctx: Context<MintNFT>, uri: String, title: String, symbol: String
         ctx.accounts.system_program.to_account_info(),
         ctx.accounts.rent.to_account_info(),
     ];
-    let creat1 = Creator {
-        address: ctx.accounts.mint.key(),
-        verified: false,
-        share: 100,
-    };
-    let creat2 = Creator {
-        address: ctx.accounts.mint_authority.key(),
-        verified: false,
-        share: 0,
-    };
+    let creators = vec![
+        Creator {
+            address: ctx.accounts.mint.key(),
+            verified: false,
+            share: 100,
+        },
+        Creator {
+            address: ctx.accounts.mint_authority.key(),
+            verified: false,
+            share: 0,
+        },
+    ];
 
-    let xx = CreateMetadataAccountV3 {
+    let create_metadata_account_v3 = CreateMetadataAccountV3 {
         metadata: ctx.accounts.metadata.key(),
         mint: ctx.accounts.mint.key(),
         mint_authority: ctx.accounts.mint_authority.key(),
@@ -87,15 +89,18 @@ pub fn handler(ctx: Context<MintNFT>, uri: String, title: String, symbol: String
         symbol,
         uri,
         seller_fee_basis_points: 0,
-        creators: Some(vec![creat1, creat2]),
+        creators: Some(creators),
         uses: None,
     };
-    let args2 = CreateMetadataAccountV3InstructionArgs {
-        data,
-        collection_details: None,
-        is_mutable: true,
-    };
-    invoke(&xx.instruction(args2), account_info.as_slice())?;
+
+    invoke(
+        &create_metadata_account_v3.instruction(CreateMetadataAccountV3InstructionArgs {
+            data,
+            collection_details: None,
+            is_mutable: true,
+        }),
+        account_info.as_slice(),
+    )?;
     let master_edition_infos = vec![
         ctx.accounts.master_edition.to_account_info(),
         ctx.accounts.mint.to_account_info(),
@@ -107,7 +112,7 @@ pub fn handler(ctx: Context<MintNFT>, uri: String, title: String, symbol: String
         ctx.accounts.system_program.to_account_info(),
         ctx.accounts.rent.to_account_info(),
     ];
-    let x = CreateMasterEditionV3 {
+    let create_master_edition_v3 = CreateMasterEditionV3 {
         edition: ctx.accounts.master_edition.key(),
         mint: ctx.accounts.mint.key(),
         metadata: ctx.accounts.metadata.key(),
@@ -119,6 +124,9 @@ pub fn handler(ctx: Context<MintNFT>, uri: String, title: String, symbol: String
         system_program: ctx.accounts.system_program.key(),
     };
     let args = CreateMasterEditionV3InstructionArgs { max_supply: None };
-    invoke(&x.instruction(args), master_edition_infos.as_slice())?;
+    invoke(
+        &create_master_edition_v3.instruction(args),
+        master_edition_infos.as_slice(),
+    )?;
     Ok(())
 }

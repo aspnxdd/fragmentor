@@ -40,7 +40,7 @@ pub mod fragmentor {
         instructions::init_vault::handler(ctx)
     }
 
-    pub fn unfrag<'key, 'accounts, 'remaining, 'info>(
+    pub fn unfragment<'key, 'accounts, 'remaining, 'info>(
         ctx: Context<'key, 'accounts, 'remaining, 'info, Unfragment<'info>>,
         _bump_auth: u8,
         fragmented_nfts: Vec<Pubkey>,

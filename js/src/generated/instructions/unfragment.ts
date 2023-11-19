@@ -12,20 +12,20 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
 
 /**
  * @category Instructions
- * @category Unfrag
+ * @category Unfragment
  * @category generated
  */
-export type UnfragInstructionArgs = {
+export type UnfragmentInstructionArgs = {
   bumpAuth: number
   fragmentedNfts: web3.PublicKey[]
 }
 /**
  * @category Instructions
- * @category Unfrag
+ * @category Unfragment
  * @category generated
  */
-export const unfragStruct = new beet.FixableBeetArgsStruct<
-  UnfragInstructionArgs & {
+export const unfragmentStruct = new beet.FixableBeetArgsStruct<
+  UnfragmentInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
 >(
@@ -34,10 +34,10 @@ export const unfragStruct = new beet.FixableBeetArgsStruct<
     ['bumpAuth', beet.u8],
     ['fragmentedNfts', beet.array(beetSolana.publicKey)],
   ],
-  'UnfragInstructionArgs',
+  'UnfragmentInstructionArgs',
 )
 /**
- * Accounts required by the _unfrag_ instruction
+ * Accounts required by the _unfragment_ instruction
  *
  * @property [_writable_] vault
  * @property [_writable_] wholeNft
@@ -46,10 +46,10 @@ export const unfragStruct = new beet.FixableBeetArgsStruct<
  * @property [] authority
  * @property [] tokenMetadataProgram
  * @category Instructions
- * @category Unfrag
+ * @category Unfragment
  * @category generated
  */
-export type UnfragInstructionAccounts = {
+export type UnfragmentInstructionAccounts = {
   vault: web3.PublicKey
   wholeNft: web3.PublicKey
   wholeNftThrone: web3.PublicKey
@@ -62,25 +62,25 @@ export type UnfragInstructionAccounts = {
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const unfragInstructionDiscriminator = [177, 117, 133, 47, 115, 51, 161, 162]
+export const unfragmentInstructionDiscriminator = [142, 61, 138, 222, 129, 97, 7, 253]
 
 /**
- * Creates a _Unfrag_ instruction.
+ * Creates a _Unfragment_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
  * @param args to provide as instruction data to the program
  *
  * @category Instructions
- * @category Unfrag
+ * @category Unfragment
  * @category generated
  */
-export function createUnfragInstruction(
-  accounts: UnfragInstructionAccounts,
-  args: UnfragInstructionArgs,
+export function createUnfragmentInstruction(
+  accounts: UnfragmentInstructionAccounts,
+  args: UnfragmentInstructionArgs,
   programId = new web3.PublicKey('9SPvLNP6TAW4ZCtST8pmCCrKYt2gctRedmq1eWAu2Cwz'),
 ) {
-  const [data] = unfragStruct.serialize({
-    instructionDiscriminator: unfragInstructionDiscriminator,
+  const [data] = unfragmentStruct.serialize({
+    instructionDiscriminator: unfragmentInstructionDiscriminator,
     ...args,
   })
   const keys: web3.AccountMeta[] = [
