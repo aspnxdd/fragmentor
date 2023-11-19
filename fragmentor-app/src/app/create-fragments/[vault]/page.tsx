@@ -27,15 +27,15 @@ const CreateFragment: NextPage = () => {
   } = useFragments(Array.isArray(vault) ? vault[0] : vault)
   const { fetchNftsQuery } = useFetchNfts()
 
-  const nfts = fetchNftsQuery.data ?? []
+  const nfts = useMemo(() => fetchNftsQuery.data ?? [], [fetchNftsQuery.data])
 
   const selectedNftImage = useMemo(
-    () => nfts.find((nft) => nft.mint.address.toBase58() === selectedNft)?.json?.image,
+    () => nfts.find(({ mint }) => mint.address.toBase58() === selectedNft)?.json?.image,
     [nfts, selectedNft],
   )
 
-  function handleClickOnNft(nft: Nft) {
-    setSelectedNft(nft.mint.address.toBase58())
+  function handleClickOnNft({ mint }: Nft) {
+    setSelectedNft(mint.address.toBase58())
     setPopupOpen(false)
     setFragments([])
   }
