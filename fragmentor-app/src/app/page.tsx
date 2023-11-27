@@ -22,14 +22,14 @@ const Home: NextPage = () => {
     <div className="m-10 flex flex-col gap-4 mt-24">
       <div className="flex gap-4">
         <button
-          className="bg-teal-600 text-white p-2 px-4 border-0 font-semibold  rounded-lg transition-colors duration-100 ease-in-out hover:bg-teal-800"
+          className="btn-primary"
           onClick={createVault}
         >
           Create vault
         </button>
         <button
-          className="bg-teal-600 text-white p-2 px-4 border-0 font-semibold  rounded-lg transition-colors duration-100 ease-in-out hover:bg-teal-800"
-          onClick={mintNft}
+          className="btn-primary"
+          onClick={()=>mintNft()}
         >
           Mint random NFT
         </button>
@@ -47,8 +47,8 @@ const Home: NextPage = () => {
               </h1>
               <div className="my-4">
                 <Link
-                  href={`/create-fragments/${selectedVault.toBase58()}`}
-                  className="bg-teal-600 cursor-pointer text-white p-2 px-4 border-0 font-semibold  rounded-lg transition-colors duration-100 ease-in-out hover:bg-teal-800 w-fit"
+                  href={`/${selectedVault.toBase58()}`}
+                  className="btn-primary"
                 >
                   Fragment NFT
                 </Link>

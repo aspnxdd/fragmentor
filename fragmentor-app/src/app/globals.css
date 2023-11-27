@@ -39,3 +39,7 @@ a {
 .shadow1 {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
+.btn-primary {
+  @apply bg-gradient-to-r from-teal-400 to-blue-500 cursor-pointer text-white p-2 px-4 border-0 font-semibold rounded-lg hover:from-teal-500 hover:to-blue-600 w-fit disabled:hover:from-gray-500 disabled:hover:to-gray-500 disabled:from-gray-500 disabled:to-gray-500 disabled:cursor-not-allowed; 
+}

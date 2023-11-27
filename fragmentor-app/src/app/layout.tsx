@@ -9,6 +9,8 @@ import Head from 'next/head'
 import { clusterApiUrl } from '@solana/web3.js'
 import Footer from '../components/Footer'
 import { QueryClient, QueryClientProvider } from 'react-query'
+import { useMemo } from 'react'
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
 
 require('@solana/wallet-adapter-react-ui/styles.css')
 
@@ -50,6 +52,25 @@ const structuredData = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const wallets = useMemo(
+    () => [
+      /**
+       * Wallets that implement either of these standards will be available automatically.
+       *
+       *   - Solana Mobile Stack Mobile Wallet Adapter Protocol
+       *     (https://github.com/solana-mobile/mobile-wallet-adapter)
+       *   - Solana Wallet Standard
+       *     (https://github.com/solana-labs/wallet-standard)
+       *
+       * If you wish to support a wallet that supports neither of those standards,
+       * instantiate its legacy wallet adapter here. Common legacy adapters can be found
+       * in the npm package `@solana/wallet-adapter-wallets`.
+       */
+      new PhantomWalletAdapter(),
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
   return (
     <html lang="en">
       <Head>
@@ -89,7 +110,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <QueryClientProvider client={queryClient}>
         <ConnectionProvider endpoint={endpoint}>
           <body className={inter.className}>
-            <WalletProvider wallets={[]} autoConnect>
+            <WalletProvider wallets={wallets} autoConnect>
               <WalletModalProvider>
                 <Navbar />
                 <Toaster />

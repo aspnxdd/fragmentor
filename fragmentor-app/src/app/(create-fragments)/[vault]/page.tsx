@@ -52,10 +52,7 @@ const CreateFragment: NextPage = () => {
 
   return (
     <div className="m-10 flex flex-col gap-4 mt-24">
-      <button
-        className="w-fit bg-teal-600 text-white p-2 px-4 border-0 font-semibold  rounded-lg transition-colors duration-100 ease-in-out hover:bg-teal-800"
-        onClick={() => setPopupOpen(true)}
-      >
+      <button className="btn-primary" onClick={() => setPopupOpen(true)}>
         Select NFT
       </button>
       <Suspense fallback={<></>}>
@@ -78,20 +75,19 @@ const CreateFragment: NextPage = () => {
       </form>
       {selectedNft ? (
         <>
-          <h2>Selected NFT</h2>
+          <h2>Selected NFT: {selectedNft}</h2>
           <div>
-            <figure>
-              <img src={selectedNftImage} alt={selectedNft} width="110" />
-              <figcaption>{selectedNft}</figcaption>
-            </figure>
+            <img
+              className="rounded-lg"
+              width="110"
+              height="90"
+              src={selectedNftImage}
+              alt={selectedNft}
+            />
           </div>
         </>
       ) : null}
-      <button
-        className="w-fit bg-teal-600 text-white p-2 px-4 border-0 font-semibold  rounded-lg transition-colors duration-100 ease-in-out hover:bg-teal-800 disabled:bg-gray-500"
-        disabled={!selectedNft}
-        onClick={handleCreateFragments}
-      >
+      <button className="btn-primary" disabled={!selectedNft} onClick={handleCreateFragments}>
         {`Create ${fragmentParts} Fragments`}
       </button>
       {fragments.length > 0 ? (

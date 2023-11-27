@@ -27,7 +27,7 @@ const Fragment: FC<Props> = ({ fragment, unfragmentNft, claimNft }) => {
         <strong>Original NFT:</strong> {fragment.originalNft}
       </h3>
       <button
-        className="bg-teal-600 text-white p-2 px-4 border-0 font-semibold rounded-lg transition-colors duration-100 ease-in-out hover:bg-teal-800"
+        className="btn-primary"
         onClick={handleUnfragmentNft}
       >
         Unfragment
@@ -41,7 +41,7 @@ const Fragment: FC<Props> = ({ fragment, unfragmentNft, claimNft }) => {
         )
       })}
       <button
-        className="bg-teal-600 text-white p-2 px-4 border-0 font-semibold rounded-lg transition-colors duration-100 ease-in-out hover:bg-teal-800"
+        className="btn-primary"
         onClick={handleClaimNft}
       >
         Claim

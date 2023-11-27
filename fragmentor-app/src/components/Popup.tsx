@@ -35,14 +35,14 @@ const Popup: FC<PropsWithChildren<PopupProps>> = ({ title, show, onClose, childr
       ref={backgroundRef}
       className="flex items-center justify-center z-10 fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-70"
     >
-      <div className="bg-teal-100 rounded-2xl min-w-[40vw] min-h-[40vh] m-10 max-w-[70vw] max-h-[90vh] relative overflow-y-auto">
-        <span className="flex bg-black justify-center items-center h-11 sticky w-full">
-          {title ? <h1 className="text-white text-2xl font-bold">{title}</h1> : null}
+      <div className="bg-gradient-to-r from-teal-100 to-blue-400 rounded-2xl min-w-[40vw] min-h-[40vh] m-10 max-w-[70vw] max-h-[90vh] relative overflow-y-auto">
+        <span className="flex bg-gradient-to-r from-teal-600 to-blue-700 justify-center items-center h-11 sticky w-full">
+          {title ? <h1 className="text-white text-xl font-bold">{title}</h1> : null}
           <button
-            className="absolute top-0 right-0 bg-transparent text-white border-0 font-bold p-2 pr-5 text-2xl"
+            className="absolute top-0 right-0 bg-transparent text-white border-0 font-bold p-2 pr-5 text-xl"
             onClick={onClose}
           >
-            ❌️
+            ⨯
           </button>
         </span>
         {children}

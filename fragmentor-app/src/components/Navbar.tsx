@@ -22,7 +22,7 @@ const Navbar: FC = () => {
       </Link>
       <div className="flex items-center content-center">
         <button
-          className="bg-teal-600 text-white p-2 px-4 border-0 font-semibold  rounded-lg transition-colors duration-100 ease-in-out hover:bg-teal-800"
+          className="btn-primary"
           onClick={() => setPopupOpen(true)}
         >
           Show NFTs
@@ -33,7 +33,8 @@ const Navbar: FC = () => {
         <div className="m-4">
           <WalletMultiButton
             style={{
-              backgroundColor: '#0d9488',
+              color: 'black',
+              backgroundColor: 'transparent',
               fontFamily: 'inherit',
               marginRight: '1rem',
               borderRadius: '0.475rem',
