@@ -1,7 +1,7 @@
 import type { FC } from 'react'
-import type { FragmentData } from 'fragmentor'
+import type { FragmentData } from 'fragmentor-sdk'
 
-import { PublicKey } from '@metaplex-foundation/js'
+import { PublicKey } from '@solana/web3.js'
 
 type Props = {
   fragment: { originalNft: string; fragments: FragmentData[] }
@@ -26,24 +26,19 @@ const Fragment: FC<Props> = ({ fragment, unfragmentNft, claimNft }) => {
       <h3>
         <strong>Original NFT:</strong> {fragment.originalNft}
       </h3>
-      <button
-        className="btn-primary"
-        onClick={handleUnfragmentNft}
-      >
+      <button className="btn-primary" onClick={handleUnfragmentNft}>
         Unfragment
       </button>
-      {fragment.fragments.map((f, index) => {
+      {fragment.fragments.map(({ isBurned, mint }, index) => {
+        const mintBs58 = mint.toBase58()
         return (
-          <div key={f.mint.toBase58()}>
-            <strong>Fragment {index + 1}:</strong> {f.mint.toBase58()}
-            {f.isBurned ? '🔥️' : '❌️'}
+          <div key={mintBs58}>
+            <strong>Fragment {index + 1}:</strong> {mintBs58}
+            {isBurned ? '🔥️' : '❌️'}
           </div>
         )
       })}
-      <button
-        className="btn-primary"
-        onClick={handleClaimNft}
-      >
+      <button className="btn-primary" onClick={handleClaimNft}>
         Claim
       </button>
     </div>

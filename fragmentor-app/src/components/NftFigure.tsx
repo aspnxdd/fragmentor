@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-'use client'
 import type { Nft } from '@metaplex-foundation/js'
 import type { FC } from 'react'
 

@@ -1,10 +1,11 @@
+import type { Dispatch, FC, SetStateAction } from 'react'
+import type { IVault } from 'fragmentor-sdk'
+
 import { PublicKey } from '@solana/web3.js'
-import { IVault } from 'fragmentor'
-import { FC } from 'react'
 
 type VaultProps = {
   vault: IVault & { address: PublicKey }
-  setSelectedVault: (address: PublicKey) => void
+  setSelectedVault: Dispatch<SetStateAction<PublicKey | null>>
 }
 
 const Vault: FC<VaultProps> = ({ vault, setSelectedVault }) => {

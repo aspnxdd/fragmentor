@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 import type { NextPage } from 'next'
 
@@ -7,7 +6,7 @@ import useMintNft from '../hooks/useMint'
 import Vault from '../components/Vault'
 import Fragment from '../components/Fragment'
 import useVaults from '../hooks/useVaults'
-import useFragments from '@/hooks/useFragments'
+import useFragments from '../hooks/useFragments'
 
 const Home: NextPage = () => {
   const { mintNft } = useMintNft()
@@ -21,16 +20,10 @@ const Home: NextPage = () => {
   return (
     <div className="m-10 flex flex-col gap-4 mt-24">
       <div className="flex gap-4">
-        <button
-          className="btn-primary"
-          onClick={createVault}
-        >
+        <button className="btn-primary" onClick={createVault}>
           Create vault
         </button>
-        <button
-          className="btn-primary"
-          onClick={()=>mintNft()}
-        >
+        <button className="btn-primary" onClick={() => mintNft()}>
           Mint random NFT
         </button>
       </div>
@@ -46,10 +39,7 @@ const Home: NextPage = () => {
                 Selected vault: {selectedVault?.toBase58()}
               </h1>
               <div className="my-4">
-                <Link
-                  href={`/${selectedVault.toBase58()}`}
-                  className="btn-primary"
-                >
+                <Link href={`/${selectedVault.toBase58()}`} className="btn-primary">
                   Fragment NFT
                 </Link>
               </div>

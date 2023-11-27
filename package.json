@@ -6,17 +6,17 @@
     "solita": "solita",
     "airdrop": "amman airdrop wallet.json 100",
     "dev:app": "pnpm --filter fragmentor-app run dev",
-    "compile": "pnpm --filter fragmentor run compile",
-    "vitest": "pnpm --filter fragmentor run vitest"
+    "compile": "pnpm --filter fragmentor-sdk run compile",
+    "vitest": "pnpm --filter fragmentor-sdk run vitest"
   },
   "dependencies": {
     "@metaplex-foundation/amman": "0.12.1",
     "@metaplex-foundation/amman-client": "0.2.4"
   },
   "devDependencies": {
-    "@metaplex-foundation/solita": "0.20.0",
-    "prettier": "2.8.8",
-    "typescript": "5.2.2"
+    "@metaplex-foundation/solita": "0.20.1",
+    "prettier": "3.1.0",
+    "typescript": "5.3.2"
   },
   "private": true
 }

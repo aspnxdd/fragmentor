@@ -1,6 +1,6 @@
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey, Keypair } from '@solana/web3.js'
-import { buildMintNftIxs } from 'fragmentor'
+import { buildMintNftIxs } from 'fragmentor-sdk'
 import useTransaction from './useTransaction'
 import toast from 'react-hot-toast'
 import { trimAddress } from '../lib/utils'

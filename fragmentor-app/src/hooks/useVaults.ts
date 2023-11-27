@@ -1,7 +1,7 @@
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey, Keypair } from '@solana/web3.js'
-import { FragmentorClient } from 'fragmentor'
+import { FragmentorClient } from 'fragmentor-sdk'
 import { useState, useMemo } from 'react'
 import toast from 'react-hot-toast'
 import { useQuery } from 'react-query'

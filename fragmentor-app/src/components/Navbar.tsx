@@ -1,12 +1,14 @@
 import { type FC, useState, Suspense } from 'react'
 
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import useFetchNfts from '../hooks/useFetchNfts'
 import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 
 const MyNftsPopup = dynamic(() => import('./MyNftsPopup'))
+const WalletMultiButton = dynamic(() =>
+  import('@solana/wallet-adapter-react-ui').then((m) => m.WalletMultiButton),
+)
 
 const Navbar: FC = () => {
   const [popupOpen, setPopupOpen] = useState(false)
@@ -21,10 +23,7 @@ const Navbar: FC = () => {
         <h1 className="text-4xl font-bold cursor-pointer">Fragmentor </h1>
       </Link>
       <div className="flex items-center content-center">
-        <button
-          className="btn-primary"
-          onClick={() => setPopupOpen(true)}
-        >
+        <button className="btn-primary" onClick={() => setPopupOpen(true)}>
           Show NFTs
         </button>
         <Suspense fallback={<></>}>

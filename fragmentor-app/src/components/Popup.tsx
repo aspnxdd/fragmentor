@@ -1,4 +1,3 @@
-'use client'
 import type { FC, PropsWithChildren, MouseEvent } from 'react';
 
 import { useRef, useEffect } from 'react';

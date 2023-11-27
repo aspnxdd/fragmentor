@@ -1,7 +1,7 @@
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
-import { FragmentData, FragmentorClient } from 'fragmentor'
+import { type FragmentData, FragmentorClient } from 'fragmentor-sdk'
 import { toastProgramErrorMessage } from '../lib/utils'
 import { useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -101,9 +101,9 @@ export default function useFragments(_selectedVault: PublicKey | null | string) 
       }
       const fragments: Fragments[] = []
       const wholeNfts = await fragmentorClient.fetchWholeNftsByVault(selectedVault)
-      for (let wholeNft of wholeNfts) {
+      for (const wholeNft of wholeNfts) {
         const [wholeNftData] = FragmentorClient.deserializeWholeNft(wholeNft.account)
-        let frags = wholeNftData.fragments.map(({ isBurned, mint }) => {
+        const frags = wholeNftData.fragments.map(({ isBurned, mint }) => {
           return { mint, isBurned }
         })
         fragments.push({ originalNft: wholeNftData.originalMint.toBase58(), fragments: frags })
