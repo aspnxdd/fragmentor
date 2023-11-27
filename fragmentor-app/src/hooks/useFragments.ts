@@ -42,7 +42,7 @@ export default function useFragments(_selectedVault: PublicKey | null | string) 
       const fragments: PublicKey[] = []
 
       for (let i = 0; i < fragmentParts; i++) {
-        const fragmentPubkey = await mintNft()
+        const fragmentPubkey = await mintNft({ shouldRefetchNfts: false, shouldToast: false })
 
         if (fragmentPubkey) {
           fragments.push(fragmentPubkey)

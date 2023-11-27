@@ -2,7 +2,7 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountInstruction,
   createInitializeMintInstruction,
-  getAssociatedTokenAddress,
+  getAssociatedTokenAddressSync,
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token'
@@ -233,7 +233,7 @@ export async function buildMintNftIxs(
 ): Promise<TransactionInstruction[]> {
   const lamports = await connection.getMinimumBalanceForRentExemption(MINT_SIZE)
 
-  const ata = await getAssociatedTokenAddress(mintKey, owner)
+  const ata = getAssociatedTokenAddressSync(mintKey, owner)
 
   const ixs = [
     SystemProgram.createAccount({
