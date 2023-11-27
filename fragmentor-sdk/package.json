@@ -1,11 +1,11 @@
 {
-  "name": "fragmentor",
+  "name": "fragmentor-sdk",
   "version": "1.0.0",
   "description": "",
   "private": true,
   "scripts": {
     "compile": "tsup src/index.ts --sourcemap --dts --format esm,cjs",
-    "vitest": "vitest run "
+    "vitest": "vitest run"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,12 +18,12 @@
     "@metaplex-foundation/beet-solana": "0.4.0",
     "@project-serum/anchor": "0.26.0",
     "@solana/spl-token": "0.3.9",
-    "@solana/web3.js": "1.64.0"
+    "@solana/web3.js": "1.87.6"
   },
   "devDependencies": {
     "@types/bn.js": "5.1.5",
-    "tsup": "8.0.0",
-    "typescript": "5.2.2",
+    "tsup": "8.0.1",
+    "typescript": "5.3.2",
     "vitest": "0.34.6"
   }
 }
