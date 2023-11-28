@@ -262,21 +262,54 @@ describe('fragmentor', async () => {
       assert.equal(wholeNft.originalMint.toBase58(), mintKey.publicKey.toBase58())
     }
   })
-
-  it('Can claim original NFT (whole NFT throne) once all the fragments have been unfragmented', async () => {
-    const mintDestAta = await getAssociatedTokenAddress(mintKey.publicKey, secondWallet.publicKey)
+  it('Issue, need to verify the user that fragmented everything can claim now', async () => {
+    const mintDestAta = await getAssociatedTokenAddress(mintKey.publicKey, wallet.publicKey)
 
     const ix1 = FragmentorClient.buildInitClaimIx(
-      secondWallet.publicKey,
+      wallet.publicKey,
       vault.publicKey,
       mintKey.publicKey,
       mintDestAta,
     )
     const tx = new anchor.web3.Transaction().add(ix1)
-    await program?.provider?.sendAndConfirm?.(tx, [secondWallet])
+    await program?.provider?.sendAndConfirm?.(tx, [wallet.payer])
 
     const response = await provider.connection.getParsedTokenAccountsByOwner(
-      secondWallet.publicKey,
+      wallet.publicKey,
+      {
+        mint: mintKey.publicKey,
+      },
+    )
+    const tokenAmount = response.value[0].account.data.parsed.info.tokenAmount.amount
+
+    expect(tokenAmount).to.equal('1')
+
+    const vaults = await fragmentorClient.fetchVaultsByOwner(wallet.publicKey)
+    expect(vaults.length).to.greaterThan(0)
+    const acc = vaults.find((e) =>
+      FragmentorClient.deserializeVault(e.account)[0].authoritySeed.equals(vault.publicKey),
+    )!
+    expect(acc).toBeDefined()
+
+    const [vaultData] = FragmentorClient.deserializeVault(acc?.account)
+    const owner = vaultData.owner.toBase58()
+    expect(owner).to.equal(wallet.publicKey.toBase58())
+    expect(vaultData.boxes).to.equal(0)
+  })
+  it('Can claim original NFT (whole NFT throne) once all the fragments have been unfragmented', async () => {
+    const mintDestAta = await getAssociatedTokenAddress(mintKey.publicKey, wallet.publicKey)
+
+    const ix1 = FragmentorClient.buildInitClaimIx(
+      wallet.publicKey,
+      vault.publicKey,
+      mintKey.publicKey,
+      mintDestAta,
+    )
+    const tx = new anchor.web3.Transaction().add(ix1)
+    await program?.provider?.sendAndConfirm?.(tx, [wallet.payer])
+
+    const response = await provider.connection.getParsedTokenAccountsByOwner(
+      wallet.publicKey,
       {
         mint: mintKey.publicKey,
       },

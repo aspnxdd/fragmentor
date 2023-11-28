@@ -13,7 +13,7 @@ pub struct Fragment<'info> {
     #[account(mut, has_one = authority)]
     pub vault: Account<'info, Vault>,
 
-    #[account(init_if_needed, seeds = [
+    #[account(init, seeds = [
         b"whole_nft",
         mint.key().as_ref(),
         vault.key().as_ref()

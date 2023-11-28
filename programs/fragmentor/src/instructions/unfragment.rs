@@ -44,6 +44,8 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
 
     let whole_nft = &*ctx.accounts.whole_nft;
 
+    //@ TODO - ensure all fragments are passed
+
     require!(
         whole_nft.assert_all_fragments_not_burned(),
         ErrorCode::AllFragmentsDestroyed

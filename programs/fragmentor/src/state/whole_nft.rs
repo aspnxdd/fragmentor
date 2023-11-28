@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 #[derive(Clone, Debug, PartialEq, Eq, AnchorSerialize, AnchorDeserialize)]
 pub struct FragmentData {
     pub mint: Pubkey,
-    pub is_burned: bool,
+    pub is_burned: bool, // @TODO - change to burned_by (Pubkey)
 }
 
 #[repr(C)]
