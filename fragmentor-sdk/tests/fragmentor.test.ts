@@ -12,19 +12,11 @@ describe('fragmentor', async () => {
   let fragment1: anchor.web3.Keypair
   let fragment2: anchor.web3.Keypair
   let fragment3: anchor.web3.Keypair
-  let fragment4: anchor.web3.Keypair
-  let fragment5: anchor.web3.Keypair
-  let fragment6: anchor.web3.Keypair
-  let fragment7: anchor.web3.Keypair
 
   let destAtaMint1: anchor.web3.PublicKey
   let destAtaFrag1: anchor.web3.PublicKey
   let destAtaFrag2: anchor.web3.PublicKey
   let destAtaFrag3: anchor.web3.PublicKey
-  let destAtaFrag4: anchor.web3.PublicKey
-  let destAtaFrag5: anchor.web3.PublicKey
-  let destAtaFrag6: anchor.web3.PublicKey
-  let destAtaFrag7: anchor.web3.PublicKey
 
   const secondWallet = Keypair.generate()
   const vault = Keypair.generate()
@@ -35,25 +27,15 @@ describe('fragmentor', async () => {
     const [_fragment1, ix01] = await buildMintNftIx()
     const [_fragment2, ix02] = await buildMintNftIx()
     const [_fragment3, ix03] = await buildMintNftIx()
-    const [_fragment4, ix04] = await buildMintNftIx()
-    const [_fragment5, ix05] = await buildMintNftIx()
-    const [_fragment6, ix06] = await buildMintNftIx()
-    const [_fragment7, ix07] = await buildMintNftIx()
 
     mintKey = _mintKey
     fragment1 = _fragment1
     fragment2 = _fragment2
     fragment3 = _fragment3
-    fragment4 = _fragment4
-    fragment5 = _fragment5
-    fragment6 = _fragment6
-    fragment7 = _fragment7
 
     // max can jam 5 ixs into 1 tx
     const t1 = new Transaction().add(ix00, ix01, ix02, ix03)
-    const t2 = new Transaction().add(ix04, ix05, ix06, ix07)
     await program?.provider?.sendAndConfirm?.(t1, [wallet.payer])
-    await program?.provider?.sendAndConfirm?.(t2, [wallet.payer])
 
     console.log({ secondWallet: secondWallet.publicKey.toBase58() })
     await provider.connection.requestAirdrop(secondWallet.publicKey, 1e9)
@@ -62,10 +44,6 @@ describe('fragmentor', async () => {
     destAtaFrag1 = await transferMint(fragment1.publicKey, secondWallet.publicKey, wallet.payer)
     destAtaFrag2 = await transferMint(fragment2.publicKey, secondWallet.publicKey, wallet.payer)
     destAtaFrag3 = await transferMint(fragment3.publicKey, secondWallet.publicKey, wallet.payer)
-    destAtaFrag4 = await transferMint(fragment4.publicKey, secondWallet.publicKey, wallet.payer)
-    destAtaFrag5 = await transferMint(fragment5.publicKey, secondWallet.publicKey, wallet.payer)
-    destAtaFrag6 = await transferMint(fragment6.publicKey, secondWallet.publicKey, wallet.payer)
-    destAtaFrag7 = await transferMint(fragment7.publicKey, secondWallet.publicKey, wallet.payer)
   }, Infinity)
 
   it('Can init vault', async () => {
@@ -98,20 +76,13 @@ describe('fragmentor', async () => {
     expect(vaultData.boxes).to.equal(0)
   })
 
-  it('Can fragment original NFT into 6 fragments', async () => {
+  it('Can fragment original NFT into 3 fragments', async () => {
     const ix = FragmentorClient.buildInitFragmentIx(
       secondWallet.publicKey,
       vault.publicKey,
       mintKey.publicKey,
       destAtaMint1,
-      [
-        fragment1.publicKey,
-        fragment2.publicKey,
-        fragment3.publicKey,
-        fragment4.publicKey,
-        fragment5.publicKey,
-        fragment6.publicKey,
-      ],
+      [fragment1.publicKey, fragment2.publicKey, fragment3.publicKey],
     )
     const tx1 = new anchor.web3.Transaction().add(ix)
 
@@ -135,19 +106,13 @@ describe('fragmentor', async () => {
       const _fragment1 = wholeNft.fragments[0].mint
       const _fragment2 = wholeNft.fragments[1].mint
       const _fragment3 = wholeNft.fragments[2].mint
-      const _fragment4 = wholeNft.fragments[3].mint
-      const _fragment5 = wholeNft.fragments[4].mint
-      const _fragment6 = wholeNft.fragments[5].mint
       expect(fragment1.publicKey.equals(_fragment1))
       expect(fragment2.publicKey.equals(_fragment2))
       expect(fragment3.publicKey.equals(_fragment3))
-      expect(fragment4.publicKey.equals(_fragment4))
-      expect(fragment5.publicKey.equals(_fragment5))
-      expect(fragment6.publicKey.equals(_fragment6))
       const originalMint = wholeNft.originalMint.toBase58()
       expect(originalMint).to.equal(mintKey.publicKey.toBase58())
       const parts = wholeNft.fragments.length
-      expect(parts).to.equal(6)
+      expect(parts).to.equal(3)
       {
         // check that the original NFT is still owned by the original owner
         const response = await provider.connection.getParsedTokenAccountsByOwner(
@@ -187,32 +152,7 @@ describe('fragmentor', async () => {
       `unknown signer: ${thirdWallet.publicKey.toBase58()}`,
     )
   })
-  it('Can unfragment first 3/6 fragments', async () => {
-    const ix1 = FragmentorClient.buildInitUnfragmentIx(
-      secondWallet.publicKey,
-      vault.publicKey,
-      mintKey.publicKey,
-      [fragment1.publicKey, fragment2.publicKey, fragment3.publicKey],
-      [destAtaFrag1, destAtaFrag2, destAtaFrag3],
-    )
 
-    // max can jam 7 fragments into a single transaction
-    const tx1 = new Transaction().add(ix1)
-
-    await program?.provider?.sendAndConfirm?.(tx1, [secondWallet])
-
-    const wholeNfts = await fragmentorClient.fetchWholeNftByOriginalMint(mintKey.publicKey)
-
-    for (const acc of wholeNfts) {
-      const [wholeNft] = FragmentorClient.deserializeWholeNft(acc.account)
-
-      const burnedNfts = wholeNft.fragments.filter((f) => f.isBurned)
-
-      console.log('wholeNft', wholeNft.pretty())
-      assert.equal(burnedNfts.length, 3)
-      assert.equal(wholeNft.originalMint.toBase58(), mintKey.publicKey.toBase58())
-    }
-  })
   it('Attempt to claim original NFT (whole NFT throne) throws error 0x1776 (Not all fragments have been destroyed)', async () => {
     const mintDestAta = await getAssociatedTokenAddress(mintKey.publicKey, secondWallet.publicKey)
 
@@ -237,13 +177,13 @@ describe('fragmentor', async () => {
 
     expect(tokenAmount).to.equal('0')
   })
-  it('Can unfragment remaining 3/6 fragments and all fragments are burned', async () => {
+  it('Can unfragment all fragments and all fragments are burned', async () => {
     const ix2 = FragmentorClient.buildInitUnfragmentIx(
       secondWallet.publicKey,
       vault.publicKey,
       mintKey.publicKey,
-      [fragment4.publicKey, fragment5.publicKey, fragment6.publicKey],
-      [destAtaFrag4, destAtaFrag5, destAtaFrag6],
+      [fragment1.publicKey, fragment2.publicKey, fragment3.publicKey],
+      [destAtaFrag1, destAtaFrag2, destAtaFrag3],
     )
 
     const tx2 = new Transaction().add(ix2)
@@ -258,11 +198,12 @@ describe('fragmentor', async () => {
       const burnedNfts = wholeNft.fragments.filter((f) => f.isBurned)
 
       console.log('wholeNft', wholeNft.pretty())
-      assert.equal(burnedNfts.length, 6)
+      assert.equal(burnedNfts.length, 3)
       assert.equal(wholeNft.originalMint.toBase58(), mintKey.publicKey.toBase58())
+      // assert.equal(wholeNft.claimer?.equals(secondWallet.publicKey), true)
     }
   })
-  it('Issue, need to verify the user that fragmented everything can claim now', async () => {
+  it('Only claimer can claim', async () => {
     const mintDestAta = await getAssociatedTokenAddress(mintKey.publicKey, wallet.publicKey)
 
     const ix1 = FragmentorClient.buildInitClaimIx(
@@ -272,44 +213,25 @@ describe('fragmentor', async () => {
       mintDestAta,
     )
     const tx = new anchor.web3.Transaction().add(ix1)
-    await program?.provider?.sendAndConfirm?.(tx, [wallet.payer])
-
-    const response = await provider.connection.getParsedTokenAccountsByOwner(
-      wallet.publicKey,
-      {
-        mint: mintKey.publicKey,
-      },
+    await expect(program?.provider?.sendAndConfirm?.(tx, [wallet.payer])).to.rejects.toThrow(
+      '0x177a',
     )
-    const tokenAmount = response.value[0].account.data.parsed.info.tokenAmount.amount
-
-    expect(tokenAmount).to.equal('1')
-
-    const vaults = await fragmentorClient.fetchVaultsByOwner(wallet.publicKey)
-    expect(vaults.length).to.greaterThan(0)
-    const acc = vaults.find((e) =>
-      FragmentorClient.deserializeVault(e.account)[0].authoritySeed.equals(vault.publicKey),
-    )!
-    expect(acc).toBeDefined()
-
-    const [vaultData] = FragmentorClient.deserializeVault(acc?.account)
-    const owner = vaultData.owner.toBase58()
-    expect(owner).to.equal(wallet.publicKey.toBase58())
-    expect(vaultData.boxes).to.equal(0)
   })
+
   it('Can claim original NFT (whole NFT throne) once all the fragments have been unfragmented', async () => {
-    const mintDestAta = await getAssociatedTokenAddress(mintKey.publicKey, wallet.publicKey)
+    const mintDestAta = await getAssociatedTokenAddress(mintKey.publicKey, secondWallet.publicKey)
 
     const ix1 = FragmentorClient.buildInitClaimIx(
-      wallet.publicKey,
+      secondWallet.publicKey,
       vault.publicKey,
       mintKey.publicKey,
       mintDestAta,
     )
     const tx = new anchor.web3.Transaction().add(ix1)
-    await program?.provider?.sendAndConfirm?.(tx, [wallet.payer])
+    await program?.provider?.sendAndConfirm?.(tx, [secondWallet])
 
     const response = await provider.connection.getParsedTokenAccountsByOwner(
-      wallet.publicKey,
+      secondWallet.publicKey,
       {
         mint: mintKey.publicKey,
       },

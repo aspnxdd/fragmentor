@@ -192,6 +192,46 @@ createErrorFromCodeLookup.set(0x1778, () => new TooManyFragmentsError())
 createErrorFromNameLookup.set('TooManyFragments', () => new TooManyFragmentsError())
 
 /**
+ * NotAllFragments: 'You need to have all the fragments'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class NotAllFragmentsError extends Error {
+  readonly code: number = 0x1779
+  readonly name: string = 'NotAllFragments'
+  constructor() {
+    super('You need to have all the fragments')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, NotAllFragmentsError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1779, () => new NotAllFragmentsError())
+createErrorFromNameLookup.set('NotAllFragments', () => new NotAllFragmentsError())
+
+/**
+ * YouAreTheClaimer: 'You are the claimer'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class YouAreTheClaimerError extends Error {
+  readonly code: number = 0x177a
+  readonly name: string = 'YouAreTheClaimer'
+  constructor() {
+    super('You are the claimer')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, YouAreTheClaimerError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x177a, () => new YouAreTheClaimerError())
+createErrorFromNameLookup.set('YouAreTheClaimer', () => new YouAreTheClaimerError())
+
+/**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  * @category generated

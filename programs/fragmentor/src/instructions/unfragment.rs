@@ -6,6 +6,7 @@ use anchor_spl::{
     token::{Token, TokenAccount},
 };
 use mpl_token_metadata::{accounts::MasterEdition, accounts::Metadata, instructions::BurnNft};
+use std::collections::BTreeMap;
 
 #[derive(Accounts)]
 #[instruction(bump_auth: u8)]
@@ -44,8 +45,6 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
 
     let whole_nft = &*ctx.accounts.whole_nft;
 
-    //@ TODO - ensure all fragments are passed
-
     require!(
         whole_nft.assert_all_fragments_not_burned(),
         ErrorCode::AllFragmentsDestroyed
@@ -54,90 +53,53 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     // the remaining accs must be passed in the following order:
     // 1. the first items must be the fragmented nfts accounts
     // 2. the first items must be the fragmented nfts associated token accounts (ata)
-    let remaining_accs = &mut ctx.remaining_accounts.iter();
-    let remaining_accs_len = remaining_accs.len();
 
-    let mut mint_accs = vec![];
-    let mut ata_accs = vec![];
-    let mut metadata_accs = vec![];
-    let mut edition_accs = vec![];
+    let mut mint_accs = BTreeMap::new();
+    let mut ata_accs = BTreeMap::new();
+    let mut metadata_accs = BTreeMap::new();
+    let mut edition_accs = BTreeMap::new();
 
     // map all the mint accs
-    for _ in 0..(remaining_accs_len / 4) {
-        let acc = next_account_info(remaining_accs);
-        match acc {
-            Ok(acc) => {
-                mint_accs.push(acc);
-            }
-            Err(_) => {
-                return Err(error!(ErrorCode::MintAccsMismatch));
-            }
-        }
-    }
-
-    // map all the ata accs
-    for _ in 0..(remaining_accs_len / 4) {
-        let acc = next_account_info(remaining_accs);
-        match acc {
-            Ok(acc) => {
-                ata_accs.push(acc);
-            }
-            Err(_) => {
-                return Err(error!(ErrorCode::AtaAccsMismatch));
-            }
-        }
-    }
-
-    // map all the metadata accs
-    for _ in 0..(remaining_accs_len / 4) {
-        let acc = next_account_info(remaining_accs);
-        match acc {
-            Ok(acc) => {
-                metadata_accs.push(acc);
-            }
-            Err(_) => {
-                return Err(error!(ErrorCode::MetadataAccsMismatch));
+    for (pos, accs) in ctx
+        .remaining_accounts
+        .chunks(ctx.remaining_accounts.len() / 4)
+        .enumerate()
+    {
+        for acc in accs {
+            match pos {
+                0 => {
+                    mint_accs.insert(acc.key(), acc);
+                }
+                1 => {
+                    ata_accs.insert(acc.key(), acc);
+                }
+                2 => {
+                    metadata_accs.insert(acc.key(), acc);
+                }
+                3 => {
+                    edition_accs.insert(acc.key(), acc);
+                }
+                _ => {}
             }
         }
     }
 
-    // map all the edition accs
-    for _ in 0..(remaining_accs_len / 4) {
-        let acc = next_account_info(remaining_accs);
-        match acc {
-            Ok(acc) => {
-                edition_accs.push(acc);
-            }
-            Err(_) => {
-                return Err(error!(ErrorCode::EditionAccsMismatch));
-            }
-        }
-    }
-
-    if mint_accs.len() != fragmented_nfts.len() {
-        return Err(error!(ErrorCode::MintAccsMismatch));
-    }
-    if ata_accs.len() != fragmented_nfts.len() {
-        return Err(error!(ErrorCode::AtaAccsMismatch));
-    }
-    if metadata_accs.len() != fragmented_nfts.len() {
-        return Err(error!(ErrorCode::MetadataAccsMismatch));
-    }
-    if edition_accs.len() != fragmented_nfts.len() {
-        return Err(error!(ErrorCode::EditionAccsMismatch));
-    }
-
-    // check user is sending all the fragmented nfts whose accounts were provided
-    let accum = mint_accs.iter().fold(0, |acc, mint| {
-        if !fragmented_nfts.contains(&mint.key()) {
-            return acc;
-        }
-        acc + 1
-    });
-
-    if accum != fragmented_nfts.len() {
-        return Err(error!(ErrorCode::MintAccsMismatch));
-    }
+    require!(
+        mint_accs.len() == fragmented_nfts.len(),
+        ErrorCode::MintAccsMismatch
+    );
+    require!(
+        ata_accs.len() == fragmented_nfts.len(),
+        ErrorCode::AtaAccsMismatch
+    );
+    require!(
+        metadata_accs.len() == fragmented_nfts.len(),
+        ErrorCode::MetadataAccsMismatch
+    );
+    require!(
+        edition_accs.len() == fragmented_nfts.len(),
+        ErrorCode::EditionAccsMismatch
+    );
 
     // // burn fragmented nft
     for fragmented_nft in &fragmented_nfts {
@@ -148,49 +110,33 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         let (edition, _) = MasterEdition::find_pda(&fragmented_nft.key());
 
         let mint_acc = mint_accs
-            .iter()
-            .find(|&&mint_acc_info| &mint_acc_info.key() == &fragment.key());
-
-        if mint_acc.is_none() {
-            return Err(error!(ErrorCode::MintAccsMismatch));
-        }
+            .get(&fragment)
+            .ok_or_else(|| error!(ErrorCode::MintAccsMismatch))?;
 
         let ata_acc = ata_accs
-            .iter()
-            .find(|&&ata_acc_info| ata_acc_info.key() == ata);
-
-        if ata_acc.is_none() {
-            return Err(error!(ErrorCode::AtaAccsMismatch));
-        }
+            .get(&ata)
+            .ok_or_else(|| error!(ErrorCode::AtaAccsMismatch))?;
 
         let metadata_acc = metadata_accs
-            .iter()
-            .find(|&&metadata_acc_info| metadata_acc_info.key() == metadata);
-
-        if metadata_acc.is_none() {
-            return Err(error!(ErrorCode::MetadataAccsMismatch));
-        }
+            .get(&metadata)
+            .ok_or_else(|| error!(ErrorCode::MetadataAccsMismatch))?;
 
         let edition_acc = edition_accs
-            .iter()
-            .find(|&&edition_acc_info| edition_acc_info.key() == edition);
-
-        if edition_acc.is_none() {
-            return Err(error!(ErrorCode::EditionAccsMismatch));
-        }
+            .get(&edition)
+            .ok_or_else(|| error!(ErrorCode::EditionAccsMismatch))?;
 
         let accs = vec![
             ctx.accounts.token_metadata_program.to_account_info(),
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
-            metadata_acc.unwrap().to_account_info(),
-            edition_acc.unwrap().to_account_info(),
-            mint_acc.unwrap().to_account_info(),
-            ata_acc.unwrap().to_account_info(),
+            metadata_acc.to_account_info(),
+            edition_acc.to_account_info(),
+            mint_acc.to_account_info(),
+            ata_acc.to_account_info(),
         ];
         let burn_nft = BurnNft {
             collection_metadata: None,
-            master_edition_account: (edition_acc.unwrap().key()),
+            master_edition_account: (edition_acc.key()),
             metadata,
             mint: fragment,
             owner,
@@ -202,6 +148,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         let whole_nft = &mut *ctx.accounts.whole_nft;
 
         whole_nft.set_fragment_as_burned(fragment.key())?;
+        whole_nft.claimer = Some(ctx.accounts.payer.key());
     }
 
     Ok(())

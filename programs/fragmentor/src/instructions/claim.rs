@@ -89,6 +89,11 @@ pub fn handler(ctx: Context<Claim>) -> Result<()> {
         ErrorCode::NotAllFragmentsDestroyed
     );
 
+    require!(
+        whole_nft.claimer.is_some() && whole_nft.claimer.unwrap() == ctx.accounts.payer.key(),
+        ErrorCode::YouAreTheClaimer
+    );
+
     token::transfer(
         ctx.accounts
             .transfer_ctx()

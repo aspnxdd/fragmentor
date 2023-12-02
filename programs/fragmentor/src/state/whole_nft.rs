@@ -14,11 +14,12 @@ pub struct FragmentData {
 pub struct WholeNft {
     pub vault: Pubkey,
     pub original_mint: Pubkey,
+    pub claimer: Option<Pubkey>,
     pub fragments: Vec<FragmentData>,
 }
 
 impl WholeNft {
-    pub const LEN: usize = 32 + 32 + MAX_FRAGMENTS * std::mem::size_of::<FragmentData>();
+    pub const LEN: usize = 32 + 32 + 33 + MAX_FRAGMENTS * std::mem::size_of::<FragmentData>();
 
     pub fn assert_all_fragments_burned(&self) -> bool {
         !self.fragments.iter().any(|f| !f.is_burned)
@@ -45,12 +46,14 @@ impl WholeNft {
     }
 
     fn init_fragments(nfts: Vec<Pubkey>) -> Vec<FragmentData> {
-        nfts.iter().map(|nft| {
-            return FragmentData {
-                mint: nft.key(),
-                is_burned: false,
-            };
-        }).collect()    
+        nfts.iter()
+            .map(|nft| {
+                return FragmentData {
+                    mint: nft.key(),
+                    is_burned: false,
+                };
+            })
+            .collect()
     }
 
     pub fn new(original_mint: &Pubkey, fragmented_nfts: Vec<Pubkey>, vault: &Pubkey) -> Self {
@@ -58,6 +61,7 @@ impl WholeNft {
             fragments: WholeNft::init_fragments(fragmented_nfts),
             original_mint: original_mint.key(),
             vault: vault.key(),
+            claimer: None,
         }
     }
 }
