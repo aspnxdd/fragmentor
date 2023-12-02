@@ -200,7 +200,7 @@ describe('fragmentor', async () => {
       console.log('wholeNft', wholeNft.pretty())
       assert.equal(burnedNfts.length, 3)
       assert.equal(wholeNft.originalMint.toBase58(), mintKey.publicKey.toBase58())
-      // assert.equal(wholeNft.claimer?.equals(secondWallet.publicKey), true)
+      assert.equal(wholeNft.claimer?.equals(secondWallet.publicKey), true)
     }
   })
   it('Only claimer can claim', async () => {

@@ -6,7 +6,7 @@ use anchor_spl::{
     token::{Token, TokenAccount},
 };
 use mpl_token_metadata::{accounts::MasterEdition, accounts::Metadata, instructions::BurnNft};
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 #[derive(Accounts)]
 #[instruction(bump_auth: u8)]
@@ -41,9 +41,7 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     ctx: Context<'key, 'accounts, 'remaining, 'info, Unfragment<'info>>,
     fragmented_nfts: Vec<Pubkey>,
 ) -> Result<()> {
-    let owner = ctx.accounts.payer.key();
-
-    let whole_nft = &*ctx.accounts.whole_nft;
+    let whole_nft = &ctx.accounts.whole_nft;
 
     require!(
         whole_nft.assert_all_fragments_not_burned(),
@@ -54,10 +52,10 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
     // 1. the first items must be the fragmented nfts accounts
     // 2. the first items must be the fragmented nfts associated token accounts (ata)
 
-    let mut mint_accs = BTreeMap::new();
-    let mut ata_accs = BTreeMap::new();
-    let mut metadata_accs = BTreeMap::new();
-    let mut edition_accs = BTreeMap::new();
+    let mut mint_accs = HashMap::new();
+    let mut ata_accs = HashMap::new();
+    let mut metadata_accs = HashMap::new();
+    let mut edition_accs = HashMap::new();
 
     // map all the mint accs
     for (pos, accs) in ctx
@@ -100,6 +98,8 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
         edition_accs.len() == fragmented_nfts.len(),
         ErrorCode::EditionAccsMismatch
     );
+
+    let owner: Pubkey = ctx.accounts.payer.key();
 
     // // burn fragmented nft
     for fragmented_nft in &fragmented_nfts {
@@ -144,12 +144,10 @@ pub fn handler<'key, 'accounts, 'remaining, 'info>(
             token_account: ata,
         };
         invoke(&burn_nft.instruction(), &accs[..])?;
-
-        let whole_nft = &mut *ctx.accounts.whole_nft;
-
-        whole_nft.set_fragment_as_burned(fragment.key())?;
-        whole_nft.claimer = Some(ctx.accounts.payer.key());
     }
+    let whole_nft = &mut *ctx.accounts.whole_nft;
+    whole_nft.set_fragments_as_burned()?;
+    whole_nft.set_claimer(ctx.accounts.payer.key());
 
     Ok(())
 }
