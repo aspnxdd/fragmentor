@@ -12,7 +12,7 @@ import { useQuery } from 'react-query'
 
 type Fragments = { originalNft: string; fragments: FragmentData[] }
 
-const DEFAULT_FRAGMENT_PARTS = 4
+const DEFAULT_FRAGMENT_PARTS = 3
 
 export default function useFragments(_selectedVault: PublicKey | null | string) {
   const { connection } = useConnection()

@@ -49,7 +49,7 @@ export default function useVaults() {
       if (!publicKey || !connection) {
         return
       }
-      const ownerVaults = await fragmentorClient.fetchVaultsByOwner(publicKey)
+      const ownerVaults = await fragmentorClient.fetchVaults()
       return ownerVaults.map((ownerVault) => {
         const [vault] = FragmentorClient.deserializeVault(ownerVault.account)
         return { ...vault, address: ownerVault.pubkey }

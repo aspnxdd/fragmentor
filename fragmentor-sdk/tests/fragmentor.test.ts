@@ -63,7 +63,7 @@ describe('fragmentor', async () => {
     await program?.provider?.sendAndConfirm?.(tx, [vault])
     console.log('vault created')
 
-    const vaults = await fragmentorClient.fetchVaultsByOwner(wallet.publicKey)
+    const vaults = await fragmentorClient.fetchVaults(wallet.publicKey)
     expect(vaults.length).to.greaterThan(0)
     const acc = vaults.find((e) =>
       FragmentorClient.deserializeVault(e.account)[0].authoritySeed.equals(vault.publicKey),
@@ -88,7 +88,7 @@ describe('fragmentor', async () => {
 
     await program?.provider?.sendAndConfirm?.(tx1, [secondWallet])
 
-    const vaults = await fragmentorClient.fetchVaultsByOwner(wallet.publicKey)
+    const vaults = await fragmentorClient.fetchVaults(wallet.publicKey)
     expect(vaults.length).to.greaterThan(0)
     const acc = vaults.find((e) =>
       FragmentorClient.deserializeVault(e.account)[0].authoritySeed.equals(vault.publicKey),
@@ -240,7 +240,7 @@ describe('fragmentor', async () => {
 
     expect(tokenAmount).to.equal('1')
 
-    const vaults = await fragmentorClient.fetchVaultsByOwner(wallet.publicKey)
+    const vaults = await fragmentorClient.fetchVaults(wallet.publicKey)
     expect(vaults.length).to.greaterThan(0)
     const acc = vaults.find((e) =>
       FragmentorClient.deserializeVault(e.account)[0].authoritySeed.equals(vault.publicKey),
