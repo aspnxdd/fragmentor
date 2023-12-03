@@ -16,7 +16,6 @@ import {
   Keypair,
   TransactionInstruction,
 } from '@solana/web3.js'
-import BN from 'bn.js'
 import {
   getMasterEdition,
   getMetadata,
@@ -25,8 +24,8 @@ import {
   getWholeNftThronePda,
   TOKEN_METADATA_PROGRAM_ID,
 } from './pda'
-import { Vault, VaultArgs } from './generated/accounts/Vault'
-import { WholeNft } from './generated/accounts/WholeNft'
+import { Vault, VaultArgs, vaultDiscriminator } from './generated/accounts/Vault'
+import { WholeNft, wholeNftDiscriminator } from './generated/accounts/WholeNft'
 import { ClaimInstructionAccounts, createClaimInstruction } from './generated/instructions/claim'
 import {
   createFragmentInstruction,
@@ -61,8 +60,13 @@ export class FragmentorClient {
 
   async fetchVaults(owner?: PublicKey) {
     return owner
-      ? await Vault.gpaBuilder().addFilter('owner', owner).run(this.connection)
-      : await Vault.gpaBuilder().run(this.connection)
+      ? await Vault.gpaBuilder()
+          .addFilter('owner', owner)
+          .addFilter('accountDiscriminator', vaultDiscriminator)
+          .run(this.connection)
+      : await Vault.gpaBuilder()
+          .addFilter('accountDiscriminator', vaultDiscriminator)
+          .run(this.connection)
   }
 
   static deserializeVault(account: AccountInfo<Buffer>): [VaultArgs, number] {
@@ -101,11 +105,17 @@ export class FragmentorClient {
   }
 
   async fetchWholeNftByOriginalMint(mint: PublicKey) {
-    return await WholeNft.gpaBuilder().addFilter('originalMint', mint).run(this.connection)
+    return await WholeNft.gpaBuilder()
+      .addFilter('originalMint', mint)
+      .addFilter('accountDiscriminator', wholeNftDiscriminator)
+      .run(this.connection)
   }
 
   async fetchWholeNftsByVault(vault: PublicKey) {
-    return await WholeNft.gpaBuilder().addFilter('vault', vault).run(this.connection)
+    return await WholeNft.gpaBuilder()
+      .addFilter('accountDiscriminator', wholeNftDiscriminator)
+      .addFilter('vault', vault)
+      .run(this.connection)
   }
 
   static deserializeWholeNft(account: AccountInfo<Buffer>) {
