@@ -9,10 +9,9 @@ import useMintNft from './useMint'
 import useTransaction from './useTransaction'
 import useFetchNfts from './useFetchNfts'
 import { useQuery } from 'react-query'
+import { DEFAULT_FRAGMENT_PARTS } from '../lib/constants'
 
 type Fragments = { originalNft: string; fragments: FragmentData[] }
-
-const DEFAULT_FRAGMENT_PARTS = 3
 
 export default function useFragments(_selectedVault: PublicKey | null | string) {
   const { connection } = useConnection()
@@ -29,8 +28,8 @@ export default function useFragments(_selectedVault: PublicKey | null | string) 
     typeof _selectedVault === 'string'
       ? new PublicKey(_selectedVault)
       : _selectedVault instanceof PublicKey
-      ? _selectedVault
-      : null
+        ? _selectedVault
+        : null
 
   async function createFragments(mintToFragment: PublicKey) {
     let lastToast: string | null = null
@@ -38,7 +37,6 @@ export default function useFragments(_selectedVault: PublicKey | null | string) 
       if (!publicKey || !connection || !signTransaction || !selectedVault || fragmentParts <= 0) {
         return
       }
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
       const fragments: PublicKey[] = []
 
       for (let i = 0; i < fragmentParts; i++) {
@@ -76,6 +74,7 @@ export default function useFragments(_selectedVault: PublicKey | null | string) 
         ata,
         fragments,
       )
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
 
       await sendAndConfirmTx({
         blockhash,

@@ -55,9 +55,11 @@ const Home: NextPage = () => {
               <h1 className="text-xl font-bold mb-4 ">
                 Selected vault: {selectedVault?.toBase58()}
               </h1>
-              <Link href={`/${selectedVault.toBase58()}`} className="btn-primary my-4">
-                Fragment NFT
-              </Link>
+              <div className="my-4">
+                <Link href={`/${selectedVault.toBase58()}`} className="btn-primary">
+                  Fragment NFT
+                </Link>
+              </div>
             </>
           ) : null}
           <div className="flex flex-wrap gap-6">

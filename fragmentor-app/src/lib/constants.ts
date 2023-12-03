@@ -1,0 +1,1 @@
+export const DEFAULT_FRAGMENT_PARTS = 3

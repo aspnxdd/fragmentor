@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic'
 import { trimAddress } from '../../../lib/utils'
 import useFragments from '../../../hooks/useFragments'
 import useFetchNfts from '../../../hooks/useFetchNfts'
+import { DEFAULT_FRAGMENT_PARTS } from '../../../lib/constants'
 
 const MyNftsPopup = dynamic(() => import('../../../components/MyNftsPopup'))
 
@@ -67,7 +68,7 @@ const CreateFragment: NextPage = () => {
         <label>Fragment Parts</label>
         <input
           type="number"
-          placeholder="4"
+          placeholder={DEFAULT_FRAGMENT_PARTS.toString()}
           max="20"
           className="p-2 border-2 border-gray-400 rounded-lg"
           onChange={(e) => setFragmentParts(Number(e.target.value))}

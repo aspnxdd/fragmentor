@@ -34,7 +34,6 @@ export default function useMintNft() {
     const nftKp = Keypair.generate()
     const nftPubkey = trimAddress(nftKp.publicKey.toBase58())
     const promise = (async () => {
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
       const ixs = await buildMintNftIxs(
         connection,
         publicKey,
@@ -44,6 +43,7 @@ export default function useMintNft() {
         NFT_PARAMS.symbol,
       )
 
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
       await sendAndConfirmTx({
         blockhash,
         lastValidBlockHeight,

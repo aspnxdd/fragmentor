@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import type { FC } from 'react'
 
 const Footer: FC = () => {
   return (
@@ -22,7 +22,7 @@ const Footer: FC = () => {
         source code
       </a>
     </footer>
-  );
-};
+  )
+}
 
-export default Footer;
+export default Footer
