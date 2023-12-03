@@ -43,21 +43,17 @@ export default function useMintNft() {
         NFT_PARAMS.symbol,
       )
 
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
       await sendAndConfirmTx({
-        blockhash,
-        lastValidBlockHeight,
         ixs,
         signers: [nftKp],
       })
-      return nftKp.publicKey
     })()
     if (shouldToast) {
       await toast.promise(
         promise,
         {
           loading: `Minting NFT to ${nftPubkey}`,
-          success: (data) => `Successfully minted to ${trimAddress(data.toBase58())}`,
+          success: () => `Successfully minted to ${trimAddress(nftKp.publicKey.toBase58())}`,
           error: (err) => `This just happened: ${err.toString()}`,
         },
         {

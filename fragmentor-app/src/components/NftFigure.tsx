@@ -20,7 +20,7 @@ const NftFigure: FC<NftFigureProps> = ({ handleClickOnNft, nft }) => {
     <button key={nft.mint.address.toBase58()} onClick={() => internalHandleClickOnNfts(nft)}>
       <figure className="p-4 object-cover text-center">
         <img
-          className="rounded-lg hover:rotate-2 duration-200 ease-in-out"
+          className="rounded-lg hover:rotate-2 duration-200 ease-in-out grow"
           src={nft.json?.image}
           alt={nft.mint.address.toBase58()}
           width="110"

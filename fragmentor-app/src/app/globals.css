@@ -20,8 +20,19 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu,
-    Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    Segoe UI,
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    Fira Sans,
+    Droid Sans,
+    Helvetica Neue,
+    sans-serif;
   background-color: #f7fafc;
 }
 
@@ -42,4 +53,43 @@ a {
 
 .btn-primary {
   @apply bg-gradient-to-r from-teal-400 to-blue-500 cursor-pointer text-white p-2 px-4 border-0 font-semibold rounded-lg hover:from-teal-500 hover:to-blue-600 w-fit disabled:hover:from-gray-500 disabled:hover:to-gray-500 disabled:from-gray-500 disabled:to-gray-500 disabled:cursor-not-allowed;
+}
+
+.fade-in {
+  animation: fadeIn 0.1s ease-in-out forwards;
+}
+
+.grow {
+  animation: grow 0.1s ease-in-out forwards;
+}
+
+.grow-left-right {
+  animation: grow-left-right 0.1s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes grow {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes grow-left-right {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
 }

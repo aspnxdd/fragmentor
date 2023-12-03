@@ -74,11 +74,8 @@ export default function useFragments(_selectedVault: PublicKey | null | string) 
         ata,
         fragments,
       )
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
 
       await sendAndConfirmTx({
-        blockhash,
-        lastValidBlockHeight,
         ixs: [ix],
         signers: [],
       })
@@ -138,7 +135,6 @@ export default function useFragments(_selectedVault: PublicKey | null | string) 
 
       for (let i = 0; i < fragmentChunks.length; ++i) {
         const fragmentChunk = fragmentChunks[i]
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
 
         const fragmentSources = fragmentChunk.map((mint) => {
           return getAssociatedTokenAddressSync(mint, publicKey)
@@ -153,8 +149,6 @@ export default function useFragments(_selectedVault: PublicKey | null | string) 
         )
 
         await sendAndConfirmTx({
-          blockhash,
-          lastValidBlockHeight,
           ixs: [ix],
           signers: [],
         })

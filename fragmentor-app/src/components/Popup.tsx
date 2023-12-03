@@ -34,7 +34,7 @@ const Popup: FC<PropsWithChildren<PopupProps>> = ({ title, show, onClose, childr
     <div
       onClick={onBackgroundClick}
       ref={backgroundRef}
-      className="flex items-center justify-center z-10 fixed top-0 left-0 w-screen h-screen bg-black/70"
+      className="flex items-center justify-center z-10 fixed top-0 left-0 w-screen h-screen bg-black/70 transition-all duration-300 ease-in-out overflow-y-auto fade-in"
     >
       <div className="bg-gradient-to-r from-teal-100 to-blue-400 rounded-2xl min-w-[40vw] min-h-[40vh] m-10 max-w-[70vw] max-h-[90vh] overflow-y-auto">
         <span className="flex bg-gradient-to-r from-teal-600 to-blue-700 justify-center items-center h-11 sticky w-full">

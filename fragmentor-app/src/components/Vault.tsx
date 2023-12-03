@@ -11,7 +11,7 @@ type VaultProps = {
 const Vault: FC<VaultProps> = ({ vault, setSelectedVault }) => {
   return (
     <button
-      className="bg-gradient-to-l from-gray-100 to-blue-200 p-2 px-4 font-semibold text-lg rounded-lg flex flex-col shadow1"
+      className="bg-gradient-to-l from-gray-100 to-blue-200 p-2 px-4 font-semibold text-lg rounded-lg flex flex-col shadow1 grow-left-right"
       key={vault.address.toBase58()}
       onClick={() => setSelectedVault(vault.address)}
     >

@@ -25,13 +25,10 @@ export default function useVaults() {
       if (!publicKey || !connection) {
         return
       }
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
       const vaultKp = Keypair.generate()
       const ix = FragmentorClient.buildInitVaultIx(publicKey, vaultKp.publicKey)
 
       await sendAndConfirmTx({
-        blockhash,
-        lastValidBlockHeight,
         ixs: [ix],
         signers: [vaultKp],
       })
@@ -66,12 +63,9 @@ export default function useVaults() {
         return
       }
 
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
       const mintDestAcc = getAssociatedTokenAddressSync(mint, publicKey)
       const ix = FragmentorClient.buildInitClaimIx(publicKey, selectedVault, mint, mintDestAcc)
       await sendAndConfirmTx({
-        blockhash,
-        lastValidBlockHeight,
         ixs: [ix],
         signers: [],
       })
