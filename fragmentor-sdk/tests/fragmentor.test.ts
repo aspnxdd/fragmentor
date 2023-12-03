@@ -73,7 +73,7 @@ describe('fragmentor', async () => {
     const [vaultData] = FragmentorClient.deserializeVault(acc.account)
     const owner = vaultData.owner.toBase58()
     expect(owner).to.equal(wallet.publicKey.toBase58())
-    expect(vaultData.boxes).to.equal(0)
+    expect(Number(vaultData.boxes)).to.equal(0)
   })
 
   it('Can fragment original NFT into 3 fragments', async () => {
@@ -97,7 +97,7 @@ describe('fragmentor', async () => {
 
     const { boxes } = FragmentorClient.deserializeVault(acc.account)[0]
 
-    expect(boxes).to.equal(1)
+    expect(Number(boxes)).to.equal(1)
 
     const wholeNfts = await fragmentorClient.fetchWholeNftByOriginalMint(mintKey.publicKey)
     for (const acc of wholeNfts) {
@@ -250,7 +250,7 @@ describe('fragmentor', async () => {
     const [vaultData] = FragmentorClient.deserializeVault(acc?.account)
     const owner = vaultData.owner.toBase58()
     expect(owner).to.equal(wallet.publicKey.toBase58())
-    expect(vaultData.boxes).to.equal(0)
+    expect(Number(vaultData.boxes)).to.equal(0)
   })
   it('Cannot claim original NFT (whole NFT throne) - fails after it is claimed', async () => {
     const mintDestAta = await getAssociatedTokenAddress(mintKey.publicKey, secondWallet.publicKey)

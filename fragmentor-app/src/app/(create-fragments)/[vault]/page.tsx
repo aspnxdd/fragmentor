@@ -6,10 +6,10 @@ import type { Nft } from '@metaplex-foundation/js'
 import { Suspense, useMemo, useState } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { useParams } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { trimAddress } from '../../../lib/utils'
 import useFragments from '../../../hooks/useFragments'
 import useFetchNfts from '../../../hooks/useFetchNfts'
-import dynamic from 'next/dynamic'
 
 const MyNftsPopup = dynamic(() => import('../../../components/MyNftsPopup'))
 
@@ -51,7 +51,7 @@ const CreateFragment: NextPage = () => {
   }
 
   return (
-    <div className="m-10 flex flex-col gap-4 mt-24">
+    <main className="m-10 flex flex-col gap-4 mt-24">
       <button className="btn-primary" onClick={() => setPopupOpen(true)}>
         Select NFT
       </button>
@@ -107,7 +107,7 @@ const CreateFragment: NextPage = () => {
           </div>
         </div>
       ) : null}
-    </div>
+    </main>
   )
 }
 

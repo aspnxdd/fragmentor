@@ -3,13 +3,13 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
-import Navbar from '../components/Navbar'
 import { Toaster } from 'react-hot-toast'
 import Head from 'next/head'
 import { clusterApiUrl } from '@solana/web3.js'
-import Footer from '../components/Footer'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
+import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
 
 require('@solana/wallet-adapter-react-ui/styles.css')
 

@@ -1,10 +1,10 @@
 import type { Dispatch, FC, SetStateAction } from 'react'
-import type { IVault } from 'fragmentor-sdk'
+import type { VaultArgs } from 'fragmentor-sdk'
 
 import { PublicKey } from '@solana/web3.js'
 
 type VaultProps = {
-  vault: IVault & { address: PublicKey }
+  vault: VaultArgs & { address: PublicKey }
   setSelectedVault: Dispatch<SetStateAction<PublicKey | null>>
 }
 
@@ -22,7 +22,7 @@ const Vault: FC<VaultProps> = ({ vault, setSelectedVault }) => {
         Owner: <span className="font-normal text-black">{vault.owner.toBase58()}</span>
       </h2>
       <h2 className="text-black">
-        Boxes: <span className="font-normal text-black">{vault.boxes}</span>
+        Boxes: <span className="font-normal text-black">{Number(vault.boxes)}</span>
       </h2>
     </button>
   )

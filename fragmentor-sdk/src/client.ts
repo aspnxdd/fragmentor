@@ -66,10 +66,7 @@ export class FragmentorClient {
   }
 
   static deserializeVault(account: AccountInfo<Buffer>): [VaultArgs, number] {
-    const [_data, n] = Vault.deserialize(account.data)
-    const data = { ..._data } as VaultArgs
-    data.boxes = Number((_data.boxes as BN).toString())
-    return [data, n]
+    return Vault.deserialize(account.data)
   }
 
   static buildInitFragmentIx(

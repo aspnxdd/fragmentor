@@ -2,23 +2,33 @@
 import type { NextPage } from 'next'
 
 import Link from 'next/link'
+import { useWallet } from '@solana/wallet-adapter-react'
 import useMintNft from '../hooks/useMint'
 import Vault from '../components/Vault'
 import Fragment from '../components/Fragment'
 import useVaults from '../hooks/useVaults'
 import useFragments from '../hooks/useFragments'
+import { useMemo, useState } from 'react'
+import Toggler from '../components/Toggler'
 
 const Home: NextPage = () => {
+  const [viewOnlyMine, setViewOnlyMine] = useState(false)
+  const { publicKey } = useWallet()
   const { mintNft } = useMintNft()
   const { claimNft, createVault, selectedVault, setSelectedVault, fetchVaults } = useVaults()
 
   const { fetchFragments, unfragmentNft } = useFragments(selectedVault)
 
-  const vaults = fetchVaults.data ?? []
-  const fragments = fetchFragments.data ?? []
+  const allVaults = useMemo(() => fetchVaults.data ?? [], [fetchVaults.data])
+  const fragments = useMemo(() => fetchFragments.data ?? [], [fetchFragments.data])
+
+  const myVaults = useMemo(() => {
+    if (!publicKey) return allVaults
+    return allVaults.filter((vault) => vault.owner.equals(publicKey))
+  }, [allVaults, publicKey])
 
   return (
-    <div className="m-10 flex flex-col gap-4 mt-24">
+    <main className="m-10 flex flex-col gap-4 mt-24">
       <div className="flex gap-4">
         <button className="btn-primary" onClick={createVault}>
           Create vault
@@ -27,9 +37,16 @@ const Home: NextPage = () => {
           Mint random NFT
         </button>
       </div>
-      <h1 className="text-xl font-bold">Your vaults:</h1>
+      <h1 className="text-xl font-bold flex items-center gap-6">
+        Vaults:
+        <Toggler setChange={setViewOnlyMine}>
+          <span className="ms-3 text-base font-medium text-gray-900 dark:text-gray-300">
+            View only my vaults
+          </span>
+        </Toggler>
+      </h1>
       <div className="flex flex-wrap gap-4 flex-col">
-        {vaults.map((vault) => (
+        {(viewOnlyMine ? myVaults : allVaults).map((vault) => (
           <Vault key={vault.address.toBase58()} setSelectedVault={setSelectedVault} vault={vault} />
         ))}
         <div>
@@ -38,11 +55,9 @@ const Home: NextPage = () => {
               <h1 className="text-xl font-bold mb-4 ">
                 Selected vault: {selectedVault?.toBase58()}
               </h1>
-              <div className="my-4">
-                <Link href={`/${selectedVault.toBase58()}`} className="btn-primary">
-                  Fragment NFT
-                </Link>
-              </div>
+              <Link href={`/${selectedVault.toBase58()}`} className="btn-primary my-4">
+                Fragment NFT
+              </Link>
             </>
           ) : null}
           <div className="flex flex-wrap gap-6">
@@ -57,7 +72,7 @@ const Home: NextPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   )
 }
 
