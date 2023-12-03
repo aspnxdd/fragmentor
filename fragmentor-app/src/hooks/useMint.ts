@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import { trimAddress } from '../lib/utils'
 import useFetchNfts from './useFetchNfts'
 
-const URI = 'https://arweave.net/0m6rZv0Nim4277-wLTPtSTP2NIB_0zvrtTFoHcSeqTo'
+const URI = 'https://fragmentor-gux46cdbm-aspnxdd.vercel.app/nft_metadata.json'
 
 const NFT_PARAMS = {
   title: 'Test NFT',
