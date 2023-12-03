@@ -11,7 +11,7 @@ declare_id!("9SPvLNP6TAW4ZCtST8pmCCrKYt2gctRedmq1eWAu2Cwz");
 pub const ANCHOR_DISC: usize = 8;
 
 #[constant]
-pub const MAX_FRAGMENTS: usize = 20;
+pub const MAX_FRAGMENTS: usize = 3;
 
 #[program]
 pub mod fragmentor {
