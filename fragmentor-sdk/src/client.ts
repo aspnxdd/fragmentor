@@ -1,0 +1,277 @@
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccountInstruction,
+  createInitializeMintInstruction,
+  getAssociatedTokenAddressSync,
+  MINT_SIZE,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token'
+import {
+  type AccountInfo,
+  Connection,
+  PublicKey,
+  SystemProgram,
+  SYSVAR_RENT_PUBKEY,
+  AccountMeta,
+  Keypair,
+  TransactionInstruction,
+} from '@solana/web3.js'
+import {
+  getMasterEdition,
+  getMetadata,
+  getVaultAuthPda,
+  getWholeNftPda,
+  getWholeNftThronePda,
+  TOKEN_METADATA_PROGRAM_ID,
+} from './pda'
+import { Vault, VaultArgs, vaultDiscriminator } from './generated/accounts/Vault'
+import { WholeNft, wholeNftDiscriminator } from './generated/accounts/WholeNft'
+import { ClaimInstructionAccounts, createClaimInstruction } from './generated/instructions/claim'
+import {
+  createFragmentInstruction,
+  FragmentInstructionAccounts,
+} from './generated/instructions/fragment'
+import {
+  createInitVaultInstruction,
+  InitVaultInstructionAccounts,
+} from './generated/instructions/initVault'
+import {
+  createUnfragmentInstruction,
+  UnfragmentInstructionAccounts,
+} from './generated/instructions/unfragment'
+import { MintNftInstructionAccounts, createMintNftInstruction } from './generated'
+
+export class FragmentorClient {
+  private readonly connection: Connection
+
+  constructor(connection: Connection) {
+    this.connection = connection
+  }
+
+  static buildInitVaultIx(owner: PublicKey, vault?: PublicKey) {
+    const initVaultIxAccs: InitVaultInstructionAccounts = {
+      creator: owner,
+      payer: owner,
+      vault: vault ?? Keypair.generate().publicKey,
+      systemProgram: SystemProgram.programId,
+    }
+    return createInitVaultInstruction(initVaultIxAccs)
+  }
+
+  async fetchVaults(owner?: PublicKey) {
+    return owner
+      ? await Vault.gpaBuilder()
+          .addFilter('owner', owner)
+          .addFilter('accountDiscriminator', vaultDiscriminator)
+          .run(this.connection)
+      : await Vault.gpaBuilder()
+          .addFilter('accountDiscriminator', vaultDiscriminator)
+          .run(this.connection)
+  }
+
+  static deserializeVault(account: AccountInfo<Buffer>): [VaultArgs, number] {
+    return Vault.deserialize(account.data)
+  }
+
+  static buildInitFragmentIx(
+    owner: PublicKey,
+    vault: PublicKey,
+    mintToFragment: PublicKey,
+    mintSource: PublicKey,
+    fragments: PublicKey[],
+  ) {
+    const [wholeNftThronePDA] = getWholeNftThronePda(mintToFragment, vault)
+    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(vault)
+    const [wholeNftPDA] = getWholeNftPda(mintToFragment, vault)
+    const fragmentIxAccs: FragmentInstructionAccounts = {
+      mint: mintToFragment,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      payer: owner,
+      systemProgram: SystemProgram.programId,
+      fragmenter: owner,
+      mintSource,
+      rent: SYSVAR_RENT_PUBKEY,
+      wholeNftThrone: wholeNftThronePDA,
+      //this authority is an account derived from the vault address that is the owner of the ATA holding the whole NFT
+      authority: vaultAuthPDA,
+      vault,
+      wholeNft: wholeNftPDA,
+    }
+    return createFragmentInstruction(fragmentIxAccs, {
+      bumpAuth: vaultAuthPDABump,
+      originalNft: mintToFragment,
+      fragmentedNfts: [...fragments],
+    })
+  }
+
+  async fetchWholeNftByOriginalMint(mint: PublicKey) {
+    return await WholeNft.gpaBuilder()
+      .addFilter('originalMint', mint)
+      .addFilter('accountDiscriminator', wholeNftDiscriminator)
+      .run(this.connection)
+  }
+
+  async fetchWholeNftsByVault(vault: PublicKey) {
+    return await WholeNft.gpaBuilder()
+      .addFilter('accountDiscriminator', wholeNftDiscriminator)
+      .addFilter('vault', vault)
+      .run(this.connection)
+  }
+
+  static deserializeWholeNft(account: AccountInfo<Buffer>) {
+    return WholeNft.deserialize(account.data)
+  }
+
+  static buildInitUnfragmentIx(
+    owner: PublicKey,
+    vault: PublicKey,
+    mintToUnfragment: PublicKey,
+    fragmentsMints: PublicKey[],
+    fragmentsSources: PublicKey[],
+  ) {
+    const [wholeNftThronePDA] = getWholeNftThronePda(mintToUnfragment, vault)
+    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(vault)
+    const [wholeNftPDA] = getWholeNftPda(mintToUnfragment, vault)
+
+    const remainingAccounts: AccountMeta[] = []
+
+    for (const fragment of fragmentsMints) {
+      remainingAccounts.push({
+        pubkey: fragment,
+        isWritable: true,
+        isSigner: false,
+      })
+    }
+
+    for (const fragmentSource of fragmentsSources) {
+      remainingAccounts.push({
+        pubkey: fragmentSource,
+        isWritable: true,
+        isSigner: false,
+      })
+    }
+
+    for (const fragment of fragmentsMints) {
+      const metadataAddress = getMetadata(fragment)
+      remainingAccounts.push({
+        pubkey: metadataAddress,
+        isWritable: true,
+        isSigner: false,
+      })
+    }
+
+    for (const fragment of fragmentsMints) {
+      const masterEdition = getMasterEdition(fragment)
+      remainingAccounts.push({
+        pubkey: masterEdition,
+        isWritable: true,
+        isSigner: false,
+      })
+    }
+
+    const unfragAccs: UnfragmentInstructionAccounts = {
+      tokenProgram: TOKEN_PROGRAM_ID,
+      payer: owner,
+      systemProgram: SystemProgram.programId,
+      rent: SYSVAR_RENT_PUBKEY,
+      wholeNftThrone: wholeNftThronePDA,
+      authority: vaultAuthPDA,
+      vault,
+      wholeNft: wholeNftPDA,
+      tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+      anchorRemainingAccounts: remainingAccounts,
+    }
+
+    return createUnfragmentInstruction(unfragAccs, {
+      bumpAuth: vaultAuthPDABump,
+      fragmentedNfts: [...fragmentsMints],
+    })
+  }
+
+  static splitArrayIntoChunks<T>(array: T[], chunkSize: number): T[][] {
+    const chunks = [] as T[][]
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize))
+    }
+    return chunks
+  }
+
+  static buildInitClaimIx(
+    owner: PublicKey,
+    vault: PublicKey,
+    mintToClaim: PublicKey,
+    mintDestAcc: PublicKey,
+  ) {
+    const [wholeNftThronePDA, wholeNftThronePDABump] = getWholeNftThronePda(mintToClaim, vault)
+    const [vaultAuthPDA, vaultAuthPDABump] = getVaultAuthPda(vault)
+    const [wholeNftPDA, wholeNftPDABump] = getWholeNftPda(mintToClaim, vault)
+
+    const claimIxAccs: ClaimInstructionAccounts = {
+      tokenProgram: TOKEN_PROGRAM_ID,
+      payer: owner,
+      systemProgram: SystemProgram.programId,
+      rent: SYSVAR_RENT_PUBKEY,
+      wholeNftThrone: wholeNftThronePDA,
+      authority: vaultAuthPDA,
+      vault,
+      wholeNft: wholeNftPDA,
+      mint: mintToClaim,
+      mintDestAcc,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    }
+
+    return createClaimInstruction(claimIxAccs, {
+      bumpAuth: vaultAuthPDABump,
+      bumpWholeNft: wholeNftPDABump,
+      bumpWholeNftThrone: wholeNftThronePDABump,
+    })
+  }
+}
+
+export async function buildMintNftIxs(
+  connection: Connection,
+  owner: PublicKey,
+  mintKey: PublicKey,
+  title: string,
+  uri: string,
+  symbol: string,
+): Promise<TransactionInstruction[]> {
+  const lamports = await connection.getMinimumBalanceForRentExemption(MINT_SIZE)
+
+  const ata = getAssociatedTokenAddressSync(mintKey, owner)
+
+  const ixs = [
+    SystemProgram.createAccount({
+      fromPubkey: owner,
+      newAccountPubkey: mintKey,
+      space: MINT_SIZE,
+      programId: TOKEN_PROGRAM_ID,
+      lamports,
+    }),
+    createInitializeMintInstruction(mintKey, 0, owner, owner),
+    createAssociatedTokenAccountInstruction(owner, ata, owner, mintKey),
+  ]
+
+  const metadataAddress = getMetadata(mintKey)
+  const masterEdition = getMasterEdition(mintKey)
+
+  const accounts: MintNftInstructionAccounts = {
+    mintAuthority: owner,
+    mint: mintKey,
+    tokenAccount: ata,
+    tokenProgram: TOKEN_PROGRAM_ID,
+    metadata: metadataAddress,
+    tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+    payer: owner,
+    systemProgram: SystemProgram.programId,
+    masterEdition,
+  }
+
+  const ix = createMintNftInstruction(accounts, {
+    title,
+    uri,
+    symbol,
+  })
+  ixs.push(ix)
+  return ixs
+}

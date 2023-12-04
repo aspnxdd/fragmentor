@@ -5,13 +5,13 @@ mod errors;
 mod instructions;
 mod state;
 
-declare_id!("FRAGFu59MRwy5KeEMnbzsUPa2JkwLVsaP7WbhF2r2Yh");
+declare_id!("9SPvLNP6TAW4ZCtST8pmCCrKYt2gctRedmq1eWAu2Cwz");
 
 #[constant]
 pub const ANCHOR_DISC: usize = 8;
 
 #[constant]
-pub const MAX_FRAGMENTS: usize = 20;
+pub const MAX_FRAGMENTS: usize = 3;
 
 #[program]
 pub mod fragmentor {
@@ -40,7 +40,7 @@ pub mod fragmentor {
         instructions::init_vault::handler(ctx)
     }
 
-    pub fn unfrag<'key, 'accounts, 'remaining, 'info>(
+    pub fn unfragment<'key, 'accounts, 'remaining, 'info>(
         ctx: Context<'key, 'accounts, 'remaining, 'info, Unfragment<'info>>,
         _bump_auth: u8,
         fragmented_nfts: Vec<Pubkey>,

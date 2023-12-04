@@ -1,0 +1,25 @@
+{
+  "name": "Fragmentor",
+  "symbol": "FRAG",
+  "description": "Fragmentor NFT",
+  "seller_fee_basis_points": 0,
+  "image": "ico.webp",
+  "external_url": "https://fragmentor-app.vercel.app/",
+  "properties": {
+    "files": [
+      {
+        "uri": "ico.webp",
+        "type": "image/webp"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "AHZyk3ejjVT3iCHZJwkBxBxzvMezmyst1QrxK16ng8xq",
+        "share": 100,
+        "isOwner": true,
+        "total": 0
+      }
+    ]
+  }
+}

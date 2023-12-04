@@ -38,6 +38,13 @@ pub enum ErrorCode {
     // 0x1778
     #[msg("Too many fragments, max 20")]
     TooManyFragments,
+
+    // 0x1779
+    #[msg("You need to have all the fragments")]
+    NotAllFragments,
     
+    // 0x177a
+    #[msg("You are the claimer")]
+    YouAreTheClaimer,
 
 }
